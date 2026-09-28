@@ -25,11 +25,13 @@
 **But :** ne rien construire sur une hypothèse fausse.
 
 - [ ] (Toi) Libérer une place de projet Supabase gratuit (mise en pause d'un projet inutilisé)
-- [ ] (Toi) Créer le projet Supabase Radar
+- [x] (Toi) Créer le projet Supabase Radar (28/09)
 - [x] (Claude) Vérifier les vraies limites gratuites (28/09) : voir `LIMITES.md`. Gemini Flash limité à ~20 requêtes/jour, donc Flash-Lite pour presque tout, embeddings en local, agent découpé en petites étapes hors de Netlify
 - [ ] (Toi) Créer un projet Google AI Studio dédié à Radar et sa clé Gemini (le quota est compté par projet)
-- [ ] (Toi) Choisir : repo public (minutes GitHub Actions illimitées, code montrable) ou privé (2 000 min/mois partagées)
-- [ ] (Claude) Schéma de la base, architecture, repo privé, tests et vérification automatique en place
+- [x] (Toi) Repo public : https://github.com/yakermks-alt/radar (28/09)
+- [x] (Claude) Migration 0001 (applis, avis, groupes, journal, pgvector), 19 tests de la base, `npm run verifier`, CI GitHub, blocage des secrets avant commit et détection GitHub activée (28/09)
+- [ ] (Toi) Coller `supabase/migrations/0001_collecte.sql` dans l'éditeur SQL de Supabase
+- [ ] (Toi) Mettre la clé secrète Supabase (`sb_secret_...`) dans `.env.local`
 
 **Fin de phase :** le repo tourne, la base est prête, les limites sont connues et notées.
 
