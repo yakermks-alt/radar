@@ -6,6 +6,10 @@ import { z } from "zod";
 
 export const PAGES_AVIS_MAX = 10; // Apple ne sert pas au-delà de 10 pages de 50 avis.
 
+// App Stores francophones : mêmes applis, avis différents (le flux est propre à chaque pays).
+export const PAYS = ["fr", "be", "ch", "ca"] as const;
+export type Pays = (typeof PAYS)[number];
+
 const libelle = z.object({ label: z.string() });
 
 const entreeAvis = z.object({
@@ -79,10 +83,11 @@ export function lireFluxAvis(json: unknown): ResultatPage {
   return { avis, dernierePage: m ? Number(m[1]) : null, ignores };
 }
 
-export function urlAvis(storeId: string, page: number): string {
+export function urlAvis(storeId: string, page: number, pays: Pays = "fr"): string {
   if (!/^\d+$/.test(storeId)) throw new Error(`Identifiant App Store invalide : ${storeId}`);
   if (!Number.isInteger(page) || page < 1 || page > PAGES_AVIS_MAX) throw new Error(`Page invalide : ${page}`);
-  return `https://itunes.apple.com/fr/rss/customerreviews/page=${page}/id=${storeId}/sortby=mostrecent/json`;
+  if (!PAYS.includes(pays)) throw new Error(`Pays invalide : ${pays}`);
+  return `https://itunes.apple.com/${pays}/rss/customerreviews/page=${page}/id=${storeId}/sortby=mostrecent/json`;
 }
 
 const resultatRecherche = z.object({

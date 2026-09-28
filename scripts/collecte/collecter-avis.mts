@@ -9,6 +9,7 @@ import {
   lireFluxAvis,
   pause,
   PAGES_AVIS_MAX,
+  PAYS,
   recupererJson,
   urlAvis,
 } from "../../src/lib/collecte/appstore";
@@ -91,40 +92,42 @@ await avecJournal(
     for (const app of apps.slice(0, maxApps)) {
       try {
         let nouveauxApp = 0;
-        for (let page = 1; page <= PAGES_AVIS_MAX; page++) {
-          const json = await recupererJson(urlAvis(app.store_id, page));
-          await pause(PAUSE_MS);
-          if (!json) break;
-          const { avis, dernierePage, ignores } = lireFluxAvis(json);
-          bilan.pages++;
-          bilan.ignores += ignores;
-          if (avis.length === 0) break;
+        // Chaque App Store francophone a ses propres avis ; une appli absente d'un pays renvoie un flux vide.
+        for (const pays of PAYS)
+          for (let page = 1; page <= PAGES_AVIS_MAX; page++) {
+            const json = await recupererJson(urlAvis(app.store_id, page, pays));
+            await pause(PAUSE_MS);
+            if (!json) break;
+            const { avis, dernierePage, ignores } = lireFluxAvis(json);
+            bilan.pages++;
+            bilan.ignores += ignores;
+            if (avis.length === 0) break;
 
-          const inseres = await verifier(
-            db
-              .from("avis")
-              .upsert(
-                avis.map((a) => ({
-                  app_id: app.id,
-                  id_externe: a.idExterne,
-                  note: a.note,
-                  titre: a.titre,
-                  contenu: a.contenu,
-                  auteur_empreinte: a.auteurEmpreinte,
-                  version_app: a.versionApp,
-                  publie_le: a.publieLe,
-                })),
-                { onConflict: "app_id,id_externe", ignoreDuplicates: true },
-              )
-              .select("id"),
-          );
-          nouveauxApp += inseres.length;
-          if (
-            inseres.length === 0 ||
-            (dernierePage !== null && page >= dernierePage)
-          )
-            break;
-        }
+            const inseres = await verifier(
+              db
+                .from("avis")
+                .upsert(
+                  avis.map((a) => ({
+                    app_id: app.id,
+                    id_externe: a.idExterne,
+                    note: a.note,
+                    titre: a.titre,
+                    contenu: a.contenu,
+                    auteur_empreinte: a.auteurEmpreinte,
+                    version_app: a.versionApp,
+                    publie_le: a.publieLe,
+                  })),
+                  { onConflict: "app_id,id_externe", ignoreDuplicates: true },
+                )
+                .select("id"),
+            );
+            nouveauxApp += inseres.length;
+            if (
+              inseres.length === 0 ||
+              (dernierePage !== null && page >= dernierePage)
+            )
+              break;
+          }
         bilan.apps++;
         bilan.nouveaux += nouveauxApp;
         console.log(`${app.nom.slice(0, 40).padEnd(40)} +${nouveauxApp}`);

@@ -82,6 +82,10 @@ describe("urls", () => {
   it("construit l'url d'une page d'avis", () => {
     expect(urlAvis("123", 2)).toBe("https://itunes.apple.com/fr/rss/customerreviews/page=2/id=123/sortby=mostrecent/json");
   });
+  it("vise le store du pays demandé", () => {
+    expect(urlAvis("123", 1, "be")).toContain("itunes.apple.com/be/rss/");
+    expect(() => urlAvis("123", 1, "us" as "fr")).toThrow();
+  });
   it("refuse un identifiant ou une page invalide", () => {
     expect(() => urlAvis("12/../x", 1)).toThrow();
     expect(() => urlAvis("123", 0)).toThrow();

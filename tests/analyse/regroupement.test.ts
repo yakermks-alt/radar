@@ -52,7 +52,7 @@ describe("scorer", () => {
   });
 
   it("borne chaque critère entre 0 et 10", () => {
-    const { detail } = scorer({ ...base, nbAvis: 10_000, nbApps: 50, partPaiement: 1, faisabilite: 42 });
+    const { detail } = scorer({ ...base, nbAvis: 10_000, nbApps: 50, partPaiement: 1, faisabilite: 42, marche: 99 });
     for (const v of Object.values(detail)) expect(v).toBeLessThanOrEqual(10);
   });
 
@@ -69,6 +69,14 @@ describe("scorer", () => {
     expect(scorer({ ...base, concentration: 1 }).score).toBe(10);
     expect(scorer({ ...base, concentration: 0 }).score).toBe(6);
     expect(scorer({ ...base, concentration: 0.5 }).score).toBe(8);
+  });
+
+  it("tient compte de la taille du marché, et l'ignore quand elle est inconnue", () => {
+    expect(scorer({ ...base, marche: 10 }).score).toBe(10);
+    expect(scorer({ ...base, marche: null }).score).toBe(10); // poids réparti sur les autres critères
+    expect(scorer({ ...base, marche: 0 }).score).toBe(8);
+    expect(scorer({ ...base, marche: 0 }).detail.marche).toBe(0);
+    expect(scorer(base).detail.marche).toBeNull();
   });
 
   it("a des poids qui font 1", () => {

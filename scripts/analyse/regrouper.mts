@@ -8,6 +8,7 @@ import { depuisPgvector, versPgvector } from "../../src/lib/analyse/embeddings";
 import { centre, communautes, fusionner, scorer } from "../../src/lib/analyse/regroupement";
 import { pause } from "../../src/lib/collecte/appstore";
 import { genererJson } from "../../src/lib/ia/gemini";
+import { creerCompteur, FORMAT_NAF, noteMarche } from "../../src/lib/marche/sirene";
 import { avecJournal, db, toutLire, verifier } from "../lib/base";
 
 const arg = (nom: string, defaut: number) => {
@@ -40,6 +41,7 @@ const nommage = z.object({
       resume: z.string().max(400),
       secteur: z.string().max(40),
       faisabilite: z.number().min(0).max(10),
+      codes_naf: z.array(z.string()).max(3),
     }),
   ),
 });
@@ -53,7 +55,10 @@ Pour chaque groupe, renvoie :
 - secteur : le secteur principal parmi ceux fournis, ou "transversal" si plusieurs secteurs sont touchés de façon égale.
 - faisabilite : de 0 à 10, la facilité pour un développeur seul aidé par l'IA de construire en moins de 3 mois une solution
   vendable à ces professionnels. Baisse la note si le problème dépend d'un acteur incontournable (banque, administration,
-  plateforme dominante), d'un agrément réglementaire, ou s'il s'agit d'un bug que seul l'éditeur peut corriger.`;
+  plateforme dominante), d'un agrément réglementaire, ou s'il s'agit d'un bug que seul l'éditeur peut corriger.
+  Si le groupe mêle une partie faisable et une partie hors de portée, note la partie faisable et formule le nom sur elle.
+- codes_naf : 1 à 3 codes NAF rév. 2 (format "49.32Z") des entreprises qui exercent ce métier et seraient les clientes.
+  Liste vide si le métier n'est pas une activité d'entreprise identifiable (ex. "salariés", "professionnels" en général).`;
 
 await avecJournal(
   "regroupement",
@@ -160,10 +165,26 @@ await avecJournal(
       await pause(4_500);
     }
 
+    // Taille du marché : entreprises actives par code NAF (API Sirene), codes invalides ignorés.
+    const compter = creerCompteur(process.env.INSEE_API_KEY);
+    const marches = new Map<number, { codes: { code: string; entreprises: number }[]; total: number } | null>();
+    for (const [i, n] of noms) {
+      const codes = [...new Set(n.codes_naf.map((c) => c.trim().toUpperCase()).filter((c) => FORMAT_NAF.test(c)))];
+      const comptes = [];
+      for (const code of codes) {
+        const entreprises = await compter(code);
+        if (entreprises) comptes.push({ code, entreprises });
+      }
+      marches.set(i, comptes.length ? { codes: comptes, total: comptes.reduce((s, c) => s + c.entreprises, 0) } : null);
+    }
+    bilan.marchesConnus = [...marches.values()].filter(Boolean).length;
+    if (!process.env.INSEE_API_KEY) console.log("INSEE_API_KEY absente : taille du marché ignorée");
+
     const aEnregistrer = groupes.flatMap((g, i) => {
       const n = noms.get(i);
       if (!n) return []; // groupe oublié par l'IA : il reviendra au prochain calcul
-      const { score, detail } = scorer({ ...g.indicateurs, faisabilite: n.faisabilite });
+      const marche = marches.get(i) ?? null;
+      const { score, detail } = scorer({ ...g.indicateurs, faisabilite: n.faisabilite, marche: noteMarche(marche?.total ?? null) });
       return [
         {
           nom: n.nom,
@@ -172,7 +193,7 @@ await avecJournal(
           nb_avis: g.indicateurs.nbAvis,
           score,
           score_detail: { ...detail, nb_apps: g.apps.size, seuil: SEUIL },
-          contexte: g.contexte,
+          contexte: { ...g.contexte, marche },
           centre: versPgvector(g.centre),
           membres: g.membres.map((t) => ({ avis_id: lignes[t.m].id, distance: Math.round(t.d * 1e4) / 1e4 })),
         },
@@ -183,9 +204,10 @@ await avecJournal(
 
     console.log(`\nBilan : ${aEnregistrer.length} groupes enregistrés (calcul n° ${bilan.calcul})`);
     for (const g of [...aEnregistrer].sort((a, b) => b.score - a.score).slice(0, 10)) {
-      console.log(`${g.score.toFixed(2)}  ${g.nom}  (${g.nb_avis} avis, ${g.score_detail.nb_apps} applis)`);
+      const m = g.contexte.marche ? `, ${g.contexte.marche.total.toLocaleString("fr-FR")} entreprises` : "";
+      console.log(`${g.score.toFixed(2)}  ${g.nom}  (${g.nb_avis} avis, ${g.score_detail.nb_apps} applis${m})`);
     }
     return "ok";
   },
-  { avis: 0, groupes: 0, avisGroupes: 0, enregistres: 0, calcul: 0 },
+  { avis: 0, groupes: 0, avisGroupes: 0, enregistres: 0, calcul: 0, marchesConnus: 0 },
 );

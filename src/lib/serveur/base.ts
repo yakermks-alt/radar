@@ -9,6 +9,7 @@ export function baseServeur() {
 }
 
 export type Citation = { note: number; titre: string | null; contenu: string; app: string };
+export type Marche = { codes: { code: string; entreprises: number }[]; total: number };
 export type Faiblesses = { bug: number; support: number; prix: number; exemples: { categorie: string; probleme: string }[] };
 export type Opportunite = {
   id: number;
@@ -20,6 +21,7 @@ export type Opportunite = {
   score: number;
   detail: Record<string, number>;
   faiblesses: Faiblesses | null;
+  marche: Marche | null;
   citations: Citation[];
 };
 
@@ -31,7 +33,7 @@ type Ligne = {
   nb_avis: number;
   score: number;
   score_detail: Record<string, unknown>;
-  contexte: { faiblesses?: Faiblesses } | null;
+  contexte: { faiblesses?: Faiblesses; marche?: Marche | null } | null;
   groupes_avis: { avis: { note: number; titre: string | null; contenu: string; apps: { nom: string } } }[];
 };
 
@@ -54,6 +56,7 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
     score: Number(g.score),
     detail: Object.fromEntries(Object.entries(g.score_detail).filter(([, v]) => typeof v === "number")) as Record<string, number>,
     faiblesses: g.contexte?.faiblesses ?? null,
+    marche: g.contexte?.marche ?? null,
     citations: g.groupes_avis.map((ga) => ({ note: ga.avis.note, titre: ga.avis.titre, contenu: ga.avis.contenu, app: ga.avis.apps.nom })),
   }));
 }

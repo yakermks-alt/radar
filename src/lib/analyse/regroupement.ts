@@ -54,11 +54,14 @@ export type Indicateurs = {
   partBesoin: number; // 0 à 1 : besoin, prix ou support (plutôt qu'un simple bug)
   faisabilite: number; // 0 à 10, estimée par l'IA
   concentration?: number; // 0 à 1 : part des plaintes dans le secteur principal (1 si absent)
+  marche?: number | null; // 0 à 10 : taille du marché (nombre d'entreprises), null si inconnue
 };
 
 // Potentiel sur 10 : un problème vaut plus s'il est fréquent, partagé par plusieurs applis (donc pas
 // le bug d'un seul éditeur), grave, lié à de l'argent déjà dépensé, et un vrai besoin plutôt qu'un bug.
-export const POIDS = { volume: 0.25, diversite: 0.25, paiement: 0.2, gravite: 0.15, besoin: 0.15 } as const;
+// Taille du marché : nombre réel d'entreprises du métier en France (API Sirene). Quand elle est inconnue,
+// son poids est réparti sur les autres critères.
+export const POIDS = { volume: 0.2, diversite: 0.2, paiement: 0.15, gravite: 0.15, besoin: 0.1, marche: 0.2 } as const;
 
 // Une plainte universelle (tous secteurs confondus) est rarement une niche à attaquer seul :
 // le score est réduit jusqu'à 40 % quand les plaintes sont dispersées entre secteurs.
@@ -71,7 +74,9 @@ export const PLANCHER_FAISABILITE = 0.2;
 const borne = (x: number) => Math.min(10, Math.max(0, x));
 const arrondi = (x: number) => Math.round(x * 100) / 100;
 
-export type DetailScore = Record<keyof typeof POIDS | "faisabilite" | "potentiel" | "concentration", number>;
+export type DetailScore = Record<Exclude<keyof typeof POIDS, "marche"> | "faisabilite" | "potentiel" | "concentration", number> & {
+  marche: number | null;
+};
 
 export function scorer(i: Indicateurs): { score: number; detail: DetailScore } {
   const criteres = {
@@ -80,8 +85,11 @@ export function scorer(i: Indicateurs): { score: number; detail: DetailScore } {
     paiement: borne(i.partPaiement * 20), // la moitié des avis = 10
     gravite: borne((i.graviteMoyenne - 1) * 5),
     besoin: borne(i.partBesoin * 10),
+    marche: i.marche === null || i.marche === undefined ? null : borne(i.marche),
   };
-  const potentiel = (Object.keys(POIDS) as (keyof typeof POIDS)[]).reduce((s, k) => s + criteres[k] * POIDS[k], 0);
+  const connus = (Object.keys(POIDS) as (keyof typeof POIDS)[]).filter((k) => criteres[k] !== null);
+  const totalPoids = connus.reduce((s, k) => s + POIDS[k], 0);
+  const potentiel = connus.reduce((s, k) => s + (criteres[k] as number) * POIDS[k], 0) / totalPoids;
   const faisabilite = borne(i.faisabilite);
   const concentration = Math.min(1, Math.max(0, i.concentration ?? 1));
   const score =
@@ -91,7 +99,7 @@ export function scorer(i: Indicateurs): { score: number; detail: DetailScore } {
   const detail = { ...criteres, faisabilite, potentiel, concentration: concentration * 10 };
   return {
     score: arrondi(score),
-    detail: Object.fromEntries(Object.entries(detail).map(([k, v]) => [k, arrondi(v)])) as DetailScore,
+    detail: Object.fromEntries(Object.entries(detail).map(([k, v]) => [k, v === null ? null : arrondi(v)])) as DetailScore,
   };
 }
 

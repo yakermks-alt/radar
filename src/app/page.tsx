@@ -8,6 +8,7 @@ const CRITERES: Record<string, string> = {
   paiement: "Argent en jeu",
   gravite: "Gravité",
   concentration: "Niche précise",
+  marche: "Taille du marché",
   faisabilite: "Faisable seul",
 };
 
@@ -58,6 +59,7 @@ function Carte({ o, rang }: { o: Opportunite; rang: number }) {
           </div>
           <p className="mt-1 text-sm text-neutral-500">
             {o.nbAvis} avis · {o.nbApps} applis · {o.secteur}
+            {o.marche && <> · {o.marche.total.toLocaleString("fr-FR")} entreprises en France</>}
           </p>
           {o.resume && <p className="mt-3 text-neutral-700 dark:text-neutral-300">{o.resume}</p>}
 
