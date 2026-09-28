@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 
 etape() { printf '\n== %s\n' "$1"; }
 
-etape "Types";   npx tsc --noEmit
+etape "Types";   npx next typegen >/dev/null && npx tsc --noEmit
 etape "Lint";    npx eslint . --max-warnings 0
 etape "Tests";   npx vitest run
 etape "Secrets"
