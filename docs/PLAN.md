@@ -59,7 +59,8 @@
 - [x] (Claude) Score sur 10 : potentiel (fréquence, nb d'applis, argent, gravité, vrai besoin) multiplié par la faisabilité (28/09)
 - [x] (Claude) Page « Top 20 des problèmes » avec citations (en local) (28/09)
 **Constat du 28/09 :** 88 groupes sur 150 sont des plaintes universelles (support injoignable, hausse des prix, interface compliquée) qui touchent tous les logiciels. Le haut du classement est donc générique, pas encore des opportunités de niche. Cause : le problème reformulé perd le contexte du métier, et bugs, support et prix sont mélangés aux vrais besoins.
-- [ ] (Claude) Version 2 proposée : opportunités tirées des seuls « besoins » (bugs, support et prix deviennent des faiblesses des concurrents), problème formulé avec le métier, pénalité pour les plaintes universelles
+- [x] (Claude) Version 2 (28/09) : opportunités tirées des 832 vrais besoins formulés avec le métier, bugs/support/prix affichés comme faiblesses des applis en place, pénalité de dispersion. 61 groupes ; en tête : commerciaux (appli mobile complète), notes de frais, facturation mobile des auto-entrepreneurs, dossier de soins mobile des infirmières libérales
+- Limites connues : doublons entre groupes proches (notes de frais, commerciaux) ; faisabilité jugée par l'IA sur un petit échantillon, parfois trop sévère (chauffeurs VTC notés 2/10 car le groupe mêle suivi des revenus, faisable, et pénalités des plateformes, hors de portée) ; peu de volume (832 besoins). L'agent de la phase 4 et Google Play (phase 3) répondront à ces points
 - [ ] (Toi) **Point de décision :** juger les regroupements. S'ils ne sont pas intéressants, on corrige le tri ou les sources avant de construire l'agent
 
 ## Phase 3 : sources supplémentaires (semaine 3)
