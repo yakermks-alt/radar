@@ -46,6 +46,8 @@
 
 **Fin de phase :** plusieurs dizaines de milliers d'avis en base, mis à jour chaque nuit sans intervention.
 
+**Bilan du 28/09 :** première collecte complète en 11 minutes sur GitHub, 0 erreur : 10 196 avis, dont 3 828 à 1-2 étoiles. Moins que prévu, car Apple ne sert que les ~500 avis les plus récents par appli et beaucoup d'applis en ont moins. Suffisant pour la phase 2 ; le volume grandira chaque nuit. Piste si besoin : ajouter Google Play.
+
 ## Phase 2 : comprendre les plaintes (semaine 2)
 
 **But :** transformer des avis bruts en problèmes clairs.
