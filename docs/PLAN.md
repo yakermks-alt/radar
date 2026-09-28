@@ -52,12 +52,14 @@
 
 **But :** transformer des avis bruts en problèmes clairs.
 
-- [ ] (Claude) Tri par l'IA : simple bug, ou vrai besoin non couvert ?
-- [ ] (Claude) Extraction structurée de chaque plainte : problème, type de client, gravité, signe qu'il paierait
-- [ ] (Claude) Embeddings calculés en local dans GitHub Actions (modèle multilingue open source, 0 quota), 384 à 768 dimensions pour tenir dans les 500 Mo
-- [ ] (Claude) Regroupement des plaintes par sens, puis nommage de chaque groupe par l'IA
-- [ ] (Claude) Score de chaque groupe : fréquence, prix payé aujourd'hui, faisabilité
-- [ ] (Claude) Première page : « Top 20 des problèmes », avec les vraies citations
+- [x] (Claude) Tri par l'IA : 4 141 avis (1 818 bugs, 1 007 besoins, 586 support, 499 prix, 231 inexploitables), 5 lots en parallèle (28/09)
+- [x] (Claude) Extraction structurée : problème reformulé sans marque, type de client, gravité, signal de paiement (28/09)
+- [x] (Claude) Embeddings en local (paraphrase-multilingual-MiniLM-L12-v2, 384 dimensions, 0 quota) (28/09)
+- [x] (Claude) Regroupement par sens (seuil 0,70), fusion des groupes proches (0,80), nommage par l'IA : 150 groupes (28/09)
+- [x] (Claude) Score sur 10 : potentiel (fréquence, nb d'applis, argent, gravité, vrai besoin) multiplié par la faisabilité (28/09)
+- [x] (Claude) Page « Top 20 des problèmes » avec citations (en local) (28/09)
+**Constat du 28/09 :** 88 groupes sur 150 sont des plaintes universelles (support injoignable, hausse des prix, interface compliquée) qui touchent tous les logiciels. Le haut du classement est donc générique, pas encore des opportunités de niche. Cause : le problème reformulé perd le contexte du métier, et bugs, support et prix sont mélangés aux vrais besoins.
+- [ ] (Claude) Version 2 proposée : opportunités tirées des seuls « besoins » (bugs, support et prix deviennent des faiblesses des concurrents), problème formulé avec le métier, pénalité pour les plaintes universelles
 - [ ] (Toi) **Point de décision :** juger les regroupements. S'ils ne sont pas intéressants, on corrige le tri ou les sources avant de construire l'agent
 
 ## Phase 3 : sources supplémentaires (semaine 3)
