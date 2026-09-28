@@ -1,12 +1,92 @@
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { topOpportunites, type Opportunite } from "@/lib/serveur/base";
+
+const CRITERES: Record<string, string> = {
+  volume: "Fréquence",
+  diversite: "Plusieurs applis",
+  paiement: "Argent en jeu",
+  gravite: "Gravité",
+  besoin: "Vrai besoin",
+  faisabilite: "Faisable seul",
+};
+
 export default function Accueil() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-4 px-4">
-      <h1 className="text-4xl font-semibold tracking-tight">Radar</h1>
-      <p className="text-lg text-neutral-600 dark:text-neutral-400">
-        Des opportunités business trouvées dans les vraies plaintes des clients, puis vérifiées
-        par un agent IA qui enquête seul.
-      </p>
-      <p className="text-sm text-neutral-500">En construction.</p>
+    <main className="mx-auto w-full max-w-3xl px-4 py-12">
+      <header className="mb-10">
+        <p className="text-sm font-medium uppercase tracking-wider text-neutral-500">Radar</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Top 20 des problèmes</h1>
+        <p className="mt-3 text-neutral-600 dark:text-neutral-400">
+          Plaintes réelles de professionnels français sur leurs logiciels, regroupées par sens et classées par potentiel.
+        </p>
+      </header>
+      <Suspense fallback={<p className="text-neutral-500">Chargement…</p>}>
+        <Liste />
+      </Suspense>
     </main>
+  );
+}
+
+async function Liste() {
+  await connection();
+  const opportunites = await topOpportunites(20);
+  if (opportunites.length === 0) {
+    return <p className="text-neutral-500">Aucun groupe calculé pour l&apos;instant.</p>;
+  }
+  return (
+    <ol className="flex flex-col gap-6">
+      {opportunites.map((o, i) => (
+        <Carte key={o.id} o={o} rang={i + 1} />
+      ))}
+    </ol>
+  );
+}
+
+function Carte({ o, rang }: { o: Opportunite; rang: number }) {
+  return (
+    <li className="rounded-xl border border-neutral-200 p-5 dark:border-neutral-800">
+      <div className="flex items-start gap-4">
+        <span className="mt-1 w-6 shrink-0 text-right text-sm tabular-nums text-neutral-400">{rang}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-4">
+            <h2 className="text-lg font-semibold leading-snug">{o.nom}</h2>
+            <span className="shrink-0 rounded-md bg-neutral-900 px-2 py-1 text-sm font-semibold tabular-nums text-white dark:bg-white dark:text-neutral-900">
+              {o.score.toFixed(1)}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-neutral-500">
+            {o.nbAvis} plaintes · {o.nbApps} applis · {o.secteur}
+          </p>
+          {o.resume && <p className="mt-3 text-neutral-700 dark:text-neutral-300">{o.resume}</p>}
+
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+            {Object.entries(CRITERES).map(([cle, libelle]) => (
+              <div key={cle}>
+                <dt className="text-xs text-neutral-500">{libelle}</dt>
+                <dd className="mt-1 h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800" aria-label={`${o.detail[cle] ?? 0} sur 10`}>
+                  <div className="h-full rounded-full bg-neutral-700 dark:bg-neutral-300" style={{ width: `${(o.detail[cle] ?? 0) * 10}%` }} />
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <ul className="mt-4 flex flex-col gap-3">
+            {o.citations.map((c, k) => (
+              <li key={k} className="border-l-2 border-neutral-300 pl-3 text-sm dark:border-neutral-700">
+                <p className="text-neutral-700 dark:text-neutral-300">
+                  {c.titre && <span className="font-medium">{c.titre}. </span>}
+                  {c.contenu.length > 240 ? `${c.contenu.slice(0, 240)}…` : c.contenu}
+                </p>
+                <p className="mt-1 text-xs text-neutral-500">
+                  {"★".repeat(c.note)}
+                  {"☆".repeat(5 - c.note)} · {c.app}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </li>
   );
 }

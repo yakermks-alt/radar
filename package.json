@@ -12,6 +12,7 @@
     "verifier": "bash scripts/verifier.sh"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "next": "16.3.6",
