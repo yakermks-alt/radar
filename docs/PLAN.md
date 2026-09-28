@@ -24,14 +24,14 @@
 
 **But :** ne rien construire sur une hypothèse fausse.
 
-- [ ] (Toi) Libérer une place de projet Supabase gratuit (mise en pause d'un projet inutilisé)
+- [x] (Toi) Libérer une place de projet Supabase gratuit (28/09)
 - [x] (Toi) Créer le projet Supabase Radar (28/09)
 - [x] (Claude) Vérifier les vraies limites gratuites (28/09) : voir `LIMITES.md`. Gemini Flash limité à ~20 requêtes/jour, donc Flash-Lite pour presque tout, embeddings en local, agent découpé en petites étapes hors de Netlify
-- [ ] (Toi) Créer un projet Google AI Studio dédié à Radar et sa clé Gemini (le quota est compté par projet)
+- [x] (Toi) Projet Google AI Studio dédié et clé Gemini (28/09)
 - [x] (Toi) Repo public : https://github.com/yakermks-alt/radar (28/09)
 - [x] (Claude) Migration 0001 (applis, avis, groupes, journal, pgvector), 19 tests de la base, `npm run verifier`, CI GitHub, blocage des secrets avant commit et détection GitHub activée (28/09)
-- [ ] (Toi) Coller `supabase/migrations/0001_collecte.sql` dans l'éditeur SQL de Supabase
-- [ ] (Toi) Mettre la clé secrète Supabase (`sb_secret_...`) dans `.env.local`
+- [x] (Toi) Migration 0001 appliquée (28/09)
+- [x] (Toi) Clé secrète Supabase en place (28/09)
 
 **Fin de phase :** le repo tourne, la base est prête, les limites sont connues et notées.
 
@@ -39,9 +39,10 @@
 
 **But :** avoir de la matière première réelle.
 
-- [ ] (Claude) Liste de ~100 applis pro françaises par secteur (compta, caisse, planning, réservation, BTP, santé, immobilier…) via l'API de recherche de l'App Store
-- [ ] (Claude) Script de collecte des avis (jusqu'à 500 par appli), dédoublonnés, mis à jour chaque nuit
-- [ ] (Claude) Tâche de nuit GitHub Actions, relancée seule en cas d'erreur, avec un journal de chaque passage
+- [x] (Claude) 215 applis pro françaises dans 17 secteurs (recherche App Store + tri par Gemini Flash-Lite), `data/apps.json` (28/09)
+- [ ] (Claude) Nettoyer les dernières erreurs de tri (ex. Heetch, appli grand public)
+- [x] (Claude) Collecte incrémentale des avis (jusqu'à 500 par appli, pseudos jamais stockés), testée (28/09)
+- [x] (Claude) Tâche de nuit GitHub Actions (4 h 30), journal de chaque passage en base (28/09)
 
 **Fin de phase :** plusieurs dizaines de milliers d'avis en base, mis à jour chaque nuit sans intervention.
 
