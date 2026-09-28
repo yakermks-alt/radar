@@ -40,12 +40,20 @@ export async function genererJson<T extends z.ZodType>(o: Options<T>): Promise<z
   };
 
   for (let essai = 1; essai <= 4; essai++) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": cle },
-      body: JSON.stringify(corps),
-      signal: AbortSignal.timeout(120_000),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": cle },
+        body: JSON.stringify(corps),
+        signal: AbortSignal.timeout(240_000),
+      });
+    } catch (e) {
+      // Coupure réseau ou Gemini surchargé au-delà de 4 min : on réessaie.
+      if (essai === 4) throw e;
+      await pause(10_000 * essai);
+      continue;
+    }
     if (res.status === 429) {
       const texte = await res.text();
       // Quota du jour épuisé : inutile d'insister, l'appelant reprendra au prochain passage.

@@ -1,6 +1,7 @@
 // Regroupe les plaintes de même sens, fait nommer chaque groupe par l'IA (titre, résumé, faisabilité),
 // calcule son score, puis remplace les groupes en base en une seule transaction.
-// Lancer : npx tsx --env-file=.env.local scripts/analyse/regrouper.mts [--seuil 0.75] [--taille-min 4]
+// Lancer : npx tsx --env-file=.env.local scripts/analyse/regrouper.mts [--seuil 0.75] [--taille-min 4] [--essai]
+// --essai : affiche les plus gros groupes sans appeler l'IA ni rien enregistrer (pour régler le seuil).
 import { z } from "zod";
 import { depuisPgvector, versPgvector } from "../../src/lib/analyse/embeddings";
 import { centre, communautes, scorer } from "../../src/lib/analyse/regroupement";
@@ -16,6 +17,7 @@ const SEUIL = arg("--seuil", 0.75);
 const TAILLE_MIN = arg("--taille-min", 4);
 const GROUPES_MAX = 150; // au-delà, les groupes sont trop petits pour valoir un appel à l'IA
 const LOT_NOMMAGE = 8;
+const ESSAI = process.argv.includes("--essai");
 
 type Ligne = {
   id: number;
@@ -94,6 +96,14 @@ await avecJournal(
         },
       };
     });
+
+    if (ESSAI) {
+      for (const g of groupes.slice(0, 25)) {
+        console.log(`\n${g.indicateurs.nbAvis} avis, ${g.apps.size} applis, ${g.secteurs.join("/")}`);
+        for (const p of g.echantillon.slice(0, 4)) console.log(`   - ${p}`);
+      }
+      return "ok";
+    }
 
     // Nommage par lots de 8 groupes (Flash-Lite).
     const noms = new Map<number, z.infer<typeof nommage>["groupes"][number]>();
