@@ -65,14 +65,17 @@
 
 ## Phase 3 : sources supplémentaires (semaine 3)
 
-**But :** ne dépendre d'aucune source unique (leçon de GummySearch, fermé en 2025 après la coupure de l'API Reddit).
+**But :** plus de matière, et la taille réelle de chaque marché, sans dépendre d'une source fragile.
 
-- [ ] (Claude) API Recherche d'entreprises : nombre d'entreprises par métier et par zone (taille du marché)
-- [ ] (Claude) BOAMP : besoins exprimés par les collectivités
-- [ ] (Claude) Hacker News : tendances tech
-- [ ] (Claude) Fusion : chaque problème regroupe ses preuves de toutes les sources
+**Décisions du 28/09 :** pas de Google Play (conditions d'utilisation interdisant la collecte, repo public, risque de blocage : la leçon de GummySearch). BOAMP et Hacker News mis de côté (collent mal aux niches de TPE françaises). À la place : App Stores francophones et taille du marché.
 
-**Fin de phase :** chaque opportunité affiche des plaintes, la taille du marché et des signaux publics.
+- [x] (Claude) Collecte sur les App Stores France, Belgique, Suisse et Canada (même flux officiel) (28/09)
+- [x] (Claude) Taille du marché : l'IA associe chaque opportunité à des codes NAF, nombre d'entreprises actives via l'API Sirene de l'Insee, nouveau critère du score (28/09)
+- [ ] (Toi) Créer la clé de l'API Sirene sur portail-api.insee.fr et la mettre dans `.env.local` (`INSEE_API_KEY`)
+- [ ] (Claude) Ajouter la clé Insee aux secrets GitHub pour la tâche de nuit
+- [ ] (Claude) Élargir la liste d'applis (plus de termes de recherche par métier)
+
+**Fin de phase :** chaque opportunité affiche ses besoins, les faiblesses des applis en place et la taille réelle du marché.
 
 ## Phase 4 : l'agent enquêteur (semaines 4 et 5)
 

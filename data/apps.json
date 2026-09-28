@@ -33,6 +33,17 @@
     "secteur": "agriculture"
   },
   {
+    "storeId": "439688430",
+    "nom": "iScape",
+    "editeur": "iScape Holdings Inc.",
+    "genre": "Lifestyle",
+    "noteMoyenne": 4.36757,
+    "nbNotes": 185,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/iscape/id439688430",
+    "secteur": "artisans-2"
+  },
+  {
     "storeId": "6448798696",
     "nom": "HelloAsso",
     "editeur": "Helloasso",
@@ -118,6 +129,17 @@
     "nbNotes": 36872,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/ce-net-caisse-depargne/id1603087433",
+    "secteur": "banque-pro"
+  },
+  {
+    "storeId": "6479202981",
+    "nom": "Deblock - Application bancaire",
+    "editeur": "Deblock",
+    "genre": "Finance",
+    "noteMoyenne": 4.72208,
+    "nbNotes": 28451,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/deblock-application-bancaire/id6479202981",
     "secteur": "banque-pro"
   },
   {
@@ -217,6 +239,17 @@
     "nbNotes": 2448,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/attijari-entreprise/id1441630076",
+    "secteur": "banque-pro"
+  },
+  {
+    "storeId": "476651878",
+    "nom": "Application BNC mobile",
+    "editeur": "Banque Nationale Du Canada",
+    "genre": "Finance",
+    "noteMoyenne": 4.79369,
+    "nbNotes": 1585,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/application-bnc-mobile/id476651878",
     "secteur": "banque-pro"
   },
   {
@@ -429,6 +462,17 @@
     "secteur": "beaute-bien-etre"
   },
   {
+    "storeId": "631402465",
+    "nom": "AlloVoisins",
+    "editeur": "IMAVENIR",
+    "genre": "Lifestyle",
+    "noteMoyenne": 4.61681,
+    "nbNotes": 79767,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/allovoisins/id631402465",
+    "secteur": "btp-artisans"
+  },
+  {
     "storeId": "637821509",
     "nom": "Archipad ™",
     "editeur": "Bigsool",
@@ -470,6 +514,17 @@
     "nbNotes": 566,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/fieldwire-suivi-de-chantier/id780165517",
+    "secteur": "btp-artisans"
+  },
+  {
+    "storeId": "1488002482",
+    "nom": "Houzz Pro",
+    "editeur": "Houzz Inc.",
+    "genre": "Business",
+    "noteMoyenne": 4.81222,
+    "nbNotes": 229,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/houzz-pro/id1488002482",
     "secteur": "btp-artisans"
   },
   {
@@ -536,6 +591,17 @@
     "nbNotes": 108,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/tech-report/id1496965102",
+    "secteur": "btp-artisans"
+  },
+  {
+    "storeId": "720159081",
+    "nom": "PlanRadar",
+    "editeur": "PlanRadar GmbH",
+    "genre": "Productivity",
+    "noteMoyenne": 4.40244,
+    "nbNotes": 82,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/planradar/id720159081",
     "secteur": "btp-artisans"
   },
   {
@@ -790,6 +856,50 @@
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/popina-ex-jalia/id1571895165",
     "secteur": "caisse-commerce"
+  },
+  {
+    "storeId": "1116734819",
+    "nom": "Transgourmet - Achats en ligne",
+    "editeur": "B S P Business Services Partenaires Sa",
+    "genre": "Shopping",
+    "noteMoyenne": 4.76132,
+    "nbNotes": 817,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/transgourmet-achats-en-ligne/id1116734819",
+    "secteur": "commerce-alimentaire"
+  },
+  {
+    "storeId": "1225136175",
+    "nom": "Lesaffre & moi",
+    "editeur": "Lesaffre International",
+    "genre": "Food & Drink",
+    "noteMoyenne": 4.68856,
+    "nbNotes": 411,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/lesaffre-moi/id1225136175",
+    "secteur": "commerce-alimentaire"
+  },
+  {
+    "storeId": "1078959762",
+    "nom": "Interflora Fleuriste",
+    "editeur": "INTERFLORA FRANCE",
+    "genre": "Utilities",
+    "noteMoyenne": 2.54545,
+    "nbNotes": 44,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/interflora-fleuriste/id1078959762",
+    "secteur": "commerce-alimentaire"
+  },
+  {
+    "storeId": "1447764816",
+    "nom": "Oucé",
+    "editeur": "Squirrel",
+    "genre": "Food & Drink",
+    "noteMoyenne": 4.48837,
+    "nbNotes": 43,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/ouc%C3%A9/id1447764816",
+    "secteur": "commerce-alimentaire"
   },
   {
     "storeId": "335023774",
@@ -1485,6 +1595,105 @@
     "secteur": "immobilier"
   },
   {
+    "storeId": "794141485",
+    "nom": "Amazon seller: vendre en ligne",
+    "editeur": "AMZN Mobile LLC",
+    "genre": "Business",
+    "noteMoyenne": 4.44058,
+    "nbNotes": 3736,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/amazon-seller-vendre-en-ligne/id794141485",
+    "secteur": "independants-creatifs"
+  },
+  {
+    "storeId": "1514081672",
+    "nom": "Capture One",
+    "editeur": "Capture One A/S",
+    "genre": "Photo & Video",
+    "noteMoyenne": 3.19149,
+    "nbNotes": 47,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/capture-one/id1514081672",
+    "secteur": "independants-creatifs"
+  },
+  {
+    "storeId": "1574343198",
+    "nom": "GoTattoo - Tatouage & Tatoueur",
+    "editeur": "GoTattoo",
+    "genre": "Lifestyle",
+    "noteMoyenne": 4.09677,
+    "nbNotes": 31,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/gotattoo-tatouage-tatoueur/id1574343198",
+    "secteur": "independants-creatifs"
+  },
+  {
+    "storeId": "1571442407",
+    "nom": "Fiscalité",
+    "editeur": "Coutot Roehrig",
+    "genre": "Reference",
+    "noteMoyenne": 4.86792,
+    "nbNotes": 53,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/fiscalit%C3%A9/id1571442407",
+    "secteur": "juridique-conseil"
+  },
+  {
+    "storeId": "1660252422",
+    "nom": "ProCadastre",
+    "editeur": "Maxime Cheroux",
+    "genre": "Business",
+    "noteMoyenne": 4.73468,
+    "nbNotes": 49,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/procadastre/id1660252422",
+    "secteur": "juridique-conseil"
+  },
+  {
+    "storeId": "1193284850",
+    "nom": "SECIB Mobile",
+    "editeur": "Secib SAS",
+    "genre": "Productivity",
+    "noteMoyenne": 2.69048,
+    "nbNotes": 42,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/secib-mobile/id1193284850",
+    "secteur": "juridique-conseil"
+  },
+  {
+    "storeId": "987390513",
+    "nom": "eDocPerso",
+    "editeur": "Silae",
+    "genre": "Productivity",
+    "noteMoyenne": 4.65672,
+    "nbNotes": 68822,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/edocperso/id987390513",
+    "secteur": "planning-rh"
+  },
+  {
+    "storeId": "476294253",
+    "nom": "Planning Facile",
+    "editeur": "Yiqi Shi",
+    "genre": "Productivity",
+    "noteMoyenne": 4.56081,
+    "nbNotes": 6052,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/planning-facile/id476294253",
+    "secteur": "planning-rh"
+  },
+  {
+    "storeId": "1316151429",
+    "nom": "QAPA - Emploi Interim",
+    "editeur": "Qapa",
+    "genre": "Business",
+    "noteMoyenne": 4.56859,
+    "nbNotes": 4031,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/qapa-emploi-interim/id1316151429",
+    "secteur": "planning-rh"
+  },
+  {
     "storeId": "857189697",
     "nom": "Suivi des heures · atWork",
     "editeur": "Sergej Steinbach",
@@ -1551,6 +1760,17 @@
     "secteur": "planning-rh"
   },
   {
+    "storeId": "6736766817",
+    "nom": "Calculateur d’heures & paie",
+    "editeur": "Trasco Studios SL",
+    "genre": "Productivity",
+    "noteMoyenne": 4.5641,
+    "nbNotes": 78,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/calculateur-dheures-paie/id6736766817",
+    "secteur": "planning-rh"
+  },
+  {
     "storeId": "1236495154",
     "nom": "Hours: Feuille de Travail",
     "editeur": "One Wave AB",
@@ -1581,6 +1801,17 @@
     "nbNotes": 54,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/badakan/id1095386061",
+    "secteur": "planning-rh"
+  },
+  {
+    "storeId": "1023931013",
+    "nom": "WorkJam",
+    "editeur": "WorkJam Inc.",
+    "genre": "Business",
+    "noteMoyenne": 3.40909,
+    "nbNotes": 44,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/workjam/id1023931013",
     "secteur": "planning-rh"
   },
   {
@@ -1658,6 +1889,17 @@
     "nbNotes": 7587,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/doctolib-pro/id1107542306",
+    "secteur": "sante-liberal"
+  },
+  {
+    "storeId": "1232220717",
+    "nom": "Brigad Santé - Talents",
+    "editeur": "THE WORKING COMPANY",
+    "genre": "Business",
+    "noteMoyenne": 4.75054,
+    "nbNotes": 6314,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/brigad-sant%C3%A9-talents/id1232220717",
     "secteur": "sante-liberal"
   },
   {
@@ -1826,6 +2068,160 @@
     "secteur": "sante-liberal"
   },
   {
+    "storeId": "1300573808",
+    "nom": "MediFile",
+    "editeur": "MONECHO",
+    "genre": "Medical",
+    "noteMoyenne": 4.55072,
+    "nbNotes": 2553,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/medifile/id1300573808",
+    "secteur": "sante-liberal-2"
+  },
+  {
+    "storeId": "1492444372",
+    "nom": "Club Officine Emploi pharmacie",
+    "editeur": "ClubOfficine",
+    "genre": "Business",
+    "noteMoyenne": 4.75234,
+    "nbNotes": 747,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/club-officine-emploi-pharmacie/id1492444372",
+    "secteur": "sante-liberal-2"
+  },
+  {
+    "storeId": "1505356195",
+    "nom": "Topaze",
+    "editeur": "Sofia Dev",
+    "genre": "Medical",
+    "noteMoyenne": 4.71064,
+    "nbNotes": 235,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/topaze/id1505356195",
+    "secteur": "sante-liberal-2"
+  },
+  {
+    "storeId": "6755723661",
+    "nom": "AmbuTrack",
+    "editeur": "WTS Conseils",
+    "genre": "Productivity",
+    "noteMoyenne": 4.58793,
+    "nbNotes": 199,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/ambutrack/id6755723661",
+    "secteur": "sante-liberal-2"
+  },
+  {
+    "storeId": "901296587",
+    "nom": "OrthoPicto | Jeux Orthophonie",
+    "editeur": "Edition Symbolicone inc.",
+    "genre": "Education",
+    "noteMoyenne": 3.21622,
+    "nbNotes": 37,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/orthopicto-jeux-orthophonie/id901296587",
+    "secteur": "sante-liberal-2"
+  },
+  {
+    "storeId": "6756374649",
+    "nom": "Agent+ Sécurité Privée & SSIAP",
+    "editeur": "Fabrice NASCIMENTO",
+    "genre": "Productivity",
+    "noteMoyenne": 4.59341,
+    "nbNotes": 91,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/agent-s%C3%A9curit%C3%A9-priv%C3%A9e-ssiap/id6756374649",
+    "secteur": "securite-proprete"
+  },
+  {
+    "storeId": "1565581192",
+    "nom": "Optivac",
+    "editeur": "Gbenakpon Morel KOFFI",
+    "genre": "Productivity",
+    "noteMoyenne": 3.87097,
+    "nbNotes": 31,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/optivac/id1565581192",
+    "secteur": "securite-proprete"
+  },
+  {
+    "storeId": "1490412726",
+    "nom": "Yoojo Prestataire",
+    "editeur": "NETDISTRICT SA",
+    "genre": "Lifestyle",
+    "noteMoyenne": 4.47172,
+    "nbNotes": 5480,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/yoojo-prestataire/id1490412726",
+    "secteur": "services-domicile"
+  },
+  {
+    "storeId": "1441433300",
+    "nom": "Ximi Mobile Intervenant",
+    "editeur": "Xelya",
+    "genre": "Business",
+    "noteMoyenne": 2.42708,
+    "nbNotes": 96,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/ximi-mobile-intervenant/id1441433300",
+    "secteur": "services-domicile"
+  },
+  {
+    "storeId": "1640518679",
+    "nom": "Accès SAP Pro",
+    "editeur": "ACCES AUX SERVICES A LA PERSONNE",
+    "genre": "Business",
+    "noteMoyenne": 4.11364,
+    "nbNotes": 88,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/acc%C3%A8s-sap-pro/id1640518679",
+    "secteur": "services-domicile"
+  },
+  {
+    "storeId": "6472815689",
+    "nom": "CLUB TIDY Pro",
+    "editeur": "CLUB TIDY",
+    "genre": "Business",
+    "noteMoyenne": 4.93243,
+    "nbNotes": 74,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/club-tidy-pro/id6472815689",
+    "secteur": "services-domicile"
+  },
+  {
+    "storeId": "1316574037",
+    "nom": "Vitalliance PRO",
+    "editeur": "ENDAL",
+    "genre": "Business",
+    "noteMoyenne": 3.09804,
+    "nbNotes": 51,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/vitalliance-pro/id1316574037",
+    "secteur": "services-domicile"
+  },
+  {
+    "storeId": "1451212275",
+    "nom": "Dalyo Domi",
+    "editeur": "Penbase",
+    "genre": "Productivity",
+    "noteMoyenne": 2.46153,
+    "nbNotes": 39,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/dalyo-domi/id1451212275",
+    "secteur": "services-domicile"
+  },
+  {
+    "storeId": "1516691161",
+    "nom": "Compani",
+    "editeur": "Compani",
+    "genre": "Education",
+    "noteMoyenne": 5,
+    "nbNotes": 31,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/compani/id1516691161",
+    "secteur": "services-domicile"
+  },
+  {
     "storeId": "1622205781",
     "nom": "SportCorico",
     "editeur": "Sideapps",
@@ -1890,6 +2286,39 @@
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/korper/id1564539864",
     "secteur": "sport-coaching"
+  },
+  {
+    "storeId": "6474193458",
+    "nom": "Coachly",
+    "editeur": "Coachly GROUP",
+    "genre": "Sports",
+    "noteMoyenne": 4.63636,
+    "nbNotes": 33,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/coachly/id6474193458",
+    "secteur": "sport-coaching"
+  },
+  {
+    "storeId": "6474019085",
+    "nom": "Chauffeur Compagnon",
+    "editeur": "Ste Nouvelle Groupement Taxi",
+    "genre": "Travel",
+    "noteMoyenne": 4.52383,
+    "nbNotes": 2518,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/chauffeur-compagnon/id6474019085",
+    "secteur": "taxi"
+  },
+  {
+    "storeId": "1561369989",
+    "nom": "Yango Pro (Taximeter) - driver",
+    "editeur": "YHub ZAF Pty Ltd",
+    "genre": "Business",
+    "noteMoyenne": 4.29735,
+    "nbNotes": 491,
+    "prix": "Gratuit",
+    "url": "https://apps.apple.com/fr/app/yango-pro-taximeter-driver/id1561369989",
+    "secteur": "taxi"
   },
   {
     "storeId": "897442736",

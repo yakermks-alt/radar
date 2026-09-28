@@ -25,6 +25,14 @@ const SECTEURS: Record<string, string[]> = {
   "hotellerie-tourisme": ["gestion hôtel", "location saisonnière", "conciergerie airbnb"],
   "vente-crm": ["CRM", "prospection commerciale", "signature électronique"],
   associations: ["gestion association", "adhérents association"],
+  "sante-liberal-2": ["dentiste cabinet", "orthophoniste", "psychologue agenda", "pharmacie officine", "ambulancier", "sage-femme"],
+  "juridique-conseil": ["avocat cabinet", "notaire", "expert-comptable client", "architecte chantier"],
+  "services-domicile": ["aide à domicile", "services à la personne", "auxiliaire de vie", "ménage entreprise"],
+  "commerce-alimentaire": ["boulangerie", "traiteur", "food truck", "marché producteur", "fleuriste"],
+  "artisans-2": ["paysagiste", "déménageur", "garage automobile", "carrossier", "serrurier"],
+  "independants-creatifs": ["photographe professionnel", "formateur indépendant", "tatoueur", "vendeur en ligne"],
+  "securite-proprete": ["agent de sécurité", "entreprise de nettoyage"],
+  taxi: ["taxi chauffeur", "moto taxi"],
 };
 
 // Applis écartées à la main après relecture : jamais reproposées.
