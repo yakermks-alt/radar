@@ -172,3 +172,18 @@ describe("fonctions d'analyse (0002)", () => {
     expect(rows).toEqual([{ nom: "B" }]);
   });
 });
+
+describe("contexte des groupes (0003)", () => {
+  it("enregistre le contexte d'un groupe", async () => {
+    const groupes = JSON.stringify([
+      { nom: "D", nb_avis: 1, score: 5, contexte: { faiblesses: { bug: 3 } }, membres: [{ avis_id: 1, distance: 0.1 }] },
+    ]);
+    await en("service_role", `select public.remplacer_groupes('${groupes}'::jsonb)`);
+    const { rows } = await db.query<{ contexte: unknown }>("select contexte from public.groupes");
+    expect(rows).toEqual([{ contexte: { faiblesses: { bug: 3 } } }]);
+  });
+
+  it("reste fermée aux clés publiques", async () => {
+    await expect(en("anon", "select public.remplacer_groupes('[]'::jsonb)")).rejects.toThrow(/permission denied/);
+  });
+});

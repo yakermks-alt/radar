@@ -34,10 +34,15 @@ Pour chaque avis, renvoie :
     publicités envahissantes (même bloquantes : c'est un choix de l'éditeur, pas un bug) ;
   "support" = service client absent, lent ou incompétent, compte bloqué sans explication ;
   "autre" = rien d'exploitable (insulte, hors sujet, avis positif, trop vague).
-- probleme : le problème de fond en une phrase courte (15 mots max), en français, SANS nom de marque ni d'appli,
+- probleme : le problème de fond en une phrase courte (20 mots max), en français, SANS nom de marque ni d'appli,
   formulé de façon générique pour que deux plaintes identiques sur deux applis différentes aient la même phrase.
-  Exemples : "Déconnexion obligatoire chaque jour", "Aucun moyen de joindre un conseiller humain",
-  "Impossible d'exporter les factures en PDF". null si categorie = "autre".
+  Pour "besoin", commence TOUJOURS par le métier ou le type d'activité concerné (déduit de l'avis, sinon du secteur
+  de l'appli), puis la tâche de travail qui est impossible, trop longue ou mal faite. Sois concret sur la tâche.
+  Exemples "besoin" : "Agent immobilier : faire une visite sur tablette en mode paysage",
+  "Infirmière libérale : facturer en tiers payant depuis le téléphone pendant la tournée",
+  "Auto-entrepreneur : suivre son chiffre d'affaires par rapport au plafond du régime".
+  Exemples autres catégories : "Déconnexion obligatoire chaque jour", "Aucun moyen de joindre un conseiller humain".
+  null si categorie = "autre".
 - type_client : le métier ou le profil de l'auteur s'il est déductible ("infirmière libérale", "auto-entrepreneur",
   "restaurateur", "chauffeur VTC"...), sinon null.
 - gravite : 1 = gêne, 2 = perte de temps ou d'argent réelle, 3 = bloque son activité ou lui fait perdre des clients.

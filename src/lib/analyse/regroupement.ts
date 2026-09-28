@@ -53,11 +53,16 @@ export type Indicateurs = {
   graviteMoyenne: number; // 1 à 3
   partBesoin: number; // 0 à 1 : besoin, prix ou support (plutôt qu'un simple bug)
   faisabilite: number; // 0 à 10, estimée par l'IA
+  concentration?: number; // 0 à 1 : part des plaintes dans le secteur principal (1 si absent)
 };
 
 // Potentiel sur 10 : un problème vaut plus s'il est fréquent, partagé par plusieurs applis (donc pas
 // le bug d'un seul éditeur), grave, lié à de l'argent déjà dépensé, et un vrai besoin plutôt qu'un bug.
 export const POIDS = { volume: 0.25, diversite: 0.25, paiement: 0.2, gravite: 0.15, besoin: 0.15 } as const;
+
+// Une plainte universelle (tous secteurs confondus) est rarement une niche à attaquer seul :
+// le score est réduit jusqu'à 40 % quand les plaintes sont dispersées entre secteurs.
+export const PLANCHER_CONCENTRATION = 0.6;
 
 // La faisabilité multiplie le potentiel au lieu de s'y ajouter : un problème qu'on ne peut pas résoudre
 // seul (banque, administration, plateforme dominante) ne doit jamais finir en haut du classement.
@@ -66,7 +71,7 @@ export const PLANCHER_FAISABILITE = 0.2;
 const borne = (x: number) => Math.min(10, Math.max(0, x));
 const arrondi = (x: number) => Math.round(x * 100) / 100;
 
-export type DetailScore = Record<keyof typeof POIDS | "faisabilite" | "potentiel", number>;
+export type DetailScore = Record<keyof typeof POIDS | "faisabilite" | "potentiel" | "concentration", number>;
 
 export function scorer(i: Indicateurs): { score: number; detail: DetailScore } {
   const criteres = {
@@ -78,8 +83,12 @@ export function scorer(i: Indicateurs): { score: number; detail: DetailScore } {
   };
   const potentiel = (Object.keys(POIDS) as (keyof typeof POIDS)[]).reduce((s, k) => s + criteres[k] * POIDS[k], 0);
   const faisabilite = borne(i.faisabilite);
-  const score = potentiel * (PLANCHER_FAISABILITE + (1 - PLANCHER_FAISABILITE) * (faisabilite / 10));
-  const detail = { ...criteres, faisabilite, potentiel };
+  const concentration = Math.min(1, Math.max(0, i.concentration ?? 1));
+  const score =
+    potentiel *
+    (PLANCHER_FAISABILITE + (1 - PLANCHER_FAISABILITE) * (faisabilite / 10)) *
+    (PLANCHER_CONCENTRATION + (1 - PLANCHER_CONCENTRATION) * concentration);
+  const detail = { ...criteres, faisabilite, potentiel, concentration: concentration * 10 };
   return {
     score: arrondi(score),
     detail: Object.fromEntries(Object.entries(detail).map(([k, v]) => [k, arrondi(v)])) as DetailScore,

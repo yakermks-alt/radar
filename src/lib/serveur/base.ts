@@ -9,6 +9,7 @@ export function baseServeur() {
 }
 
 export type Citation = { note: number; titre: string | null; contenu: string; app: string };
+export type Faiblesses = { bug: number; support: number; prix: number; exemples: { categorie: string; probleme: string }[] };
 export type Opportunite = {
   id: number;
   nom: string;
@@ -18,6 +19,7 @@ export type Opportunite = {
   nbApps: number;
   score: number;
   detail: Record<string, number>;
+  faiblesses: Faiblesses | null;
   citations: Citation[];
 };
 
@@ -29,13 +31,14 @@ type Ligne = {
   nb_avis: number;
   score: number;
   score_detail: Record<string, unknown>;
+  contexte: { faiblesses?: Faiblesses } | null;
   groupes_avis: { avis: { note: number; titre: string | null; contenu: string; apps: { nom: string } } }[];
 };
 
 export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
   const { data, error } = await baseServeur()
     .from("groupes")
-    .select("id, nom, resume, secteur, nb_avis, score, score_detail, groupes_avis(distance, avis(note, titre, contenu, apps(nom)))")
+    .select("id, nom, resume, secteur, nb_avis, score, score_detail, contexte, groupes_avis(distance, avis(note, titre, contenu, apps(nom)))")
     .order("score", { ascending: false })
     .order("distance", { referencedTable: "groupes_avis" })
     .limit(3, { referencedTable: "groupes_avis" })
@@ -50,6 +53,7 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
     nbApps: Number(g.score_detail.nb_apps ?? 0),
     score: Number(g.score),
     detail: Object.fromEntries(Object.entries(g.score_detail).filter(([, v]) => typeof v === "number")) as Record<string, number>,
+    faiblesses: g.contexte?.faiblesses ?? null,
     citations: g.groupes_avis.map((ga) => ({ note: ga.avis.note, titre: ga.avis.titre, contenu: ga.avis.contenu, app: ga.avis.apps.nom })),
   }));
 }

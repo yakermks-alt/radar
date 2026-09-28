@@ -65,6 +65,12 @@ describe("scorer", () => {
     expect(scorer({ ...base, faisabilite: 1 }).score).toBeLessThan(scorer({ ...base, nbAvis: 10, faisabilite: 6 }).score);
   });
 
+  it("réduit une plainte dispersée entre secteurs", () => {
+    expect(scorer({ ...base, concentration: 1 }).score).toBe(10);
+    expect(scorer({ ...base, concentration: 0 }).score).toBe(6);
+    expect(scorer({ ...base, concentration: 0.5 }).score).toBe(8);
+  });
+
   it("a des poids qui font 1", () => {
     expect(Object.values(POIDS).reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
   });

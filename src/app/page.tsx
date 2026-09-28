@@ -7,7 +7,7 @@ const CRITERES: Record<string, string> = {
   diversite: "Plusieurs applis",
   paiement: "Argent en jeu",
   gravite: "Gravité",
-  besoin: "Vrai besoin",
+  concentration: "Niche précise",
   faisabilite: "Faisable seul",
 };
 
@@ -18,7 +18,8 @@ export default function Accueil() {
         <p className="text-sm font-medium uppercase tracking-wider text-neutral-500">Radar</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Top 20 des problèmes</h1>
         <p className="mt-3 text-neutral-600 dark:text-neutral-400">
-          Plaintes réelles de professionnels français sur leurs logiciels, regroupées par sens et classées par potentiel.
+          Besoins non couverts, tirés des avis de professionnels français sur leurs logiciels, regroupés par sens et
+          classés par potentiel.
         </p>
       </header>
       <Suspense fallback={<p className="text-neutral-500">Chargement…</p>}>
@@ -56,7 +57,7 @@ function Carte({ o, rang }: { o: Opportunite; rang: number }) {
             </span>
           </div>
           <p className="mt-1 text-sm text-neutral-500">
-            {o.nbAvis} plaintes · {o.nbApps} applis · {o.secteur}
+            {o.nbAvis} avis · {o.nbApps} applis · {o.secteur}
           </p>
           {o.resume && <p className="mt-3 text-neutral-700 dark:text-neutral-300">{o.resume}</p>}
 
@@ -70,6 +71,22 @@ function Carte({ o, rang }: { o: Opportunite; rang: number }) {
               </div>
             ))}
           </dl>
+
+          {o.faiblesses && o.faiblesses.bug + o.faiblesses.support + o.faiblesses.prix > 0 && (
+            <div className="mt-4 rounded-lg bg-neutral-100 p-3 text-sm dark:bg-neutral-900">
+              <p className="font-medium">Faiblesses des applis en place</p>
+              <p className="mt-1 text-neutral-600 dark:text-neutral-400">
+                {o.faiblesses.bug} plaintes de bugs · {o.faiblesses.support} de support · {o.faiblesses.prix} de prix
+              </p>
+              {o.faiblesses.exemples.length > 0 && (
+                <ul className="mt-2 list-disc pl-5 text-neutral-600 dark:text-neutral-400">
+                  {o.faiblesses.exemples.map((e) => (
+                    <li key={e.categorie}>{e.probleme}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           <ul className="mt-4 flex flex-col gap-3">
             {o.citations.map((c, k) => (
