@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Bloque tout commit qui contient un secret (repo public).
+set -euo pipefail
+gitleaks git --pre-commit --staged --no-banner --redact
