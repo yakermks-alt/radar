@@ -55,25 +55,52 @@ export type Indicateurs = {
   faisabilite: number; // 0 à 10, estimée par l'IA
 };
 
-// Poids du score sur 10. Un problème vaut plus s'il est fréquent, partagé par plusieurs applis
-// (donc pas le bug d'un seul éditeur), grave, lié à de l'argent déjà dépensé, et faisable.
-export const POIDS = { volume: 0.2, diversite: 0.2, paiement: 0.15, gravite: 0.15, besoin: 0.1, faisabilite: 0.2 } as const;
+// Potentiel sur 10 : un problème vaut plus s'il est fréquent, partagé par plusieurs applis (donc pas
+// le bug d'un seul éditeur), grave, lié à de l'argent déjà dépensé, et un vrai besoin plutôt qu'un bug.
+export const POIDS = { volume: 0.25, diversite: 0.25, paiement: 0.2, gravite: 0.15, besoin: 0.15 } as const;
+
+// La faisabilité multiplie le potentiel au lieu de s'y ajouter : un problème qu'on ne peut pas résoudre
+// seul (banque, administration, plateforme dominante) ne doit jamais finir en haut du classement.
+export const PLANCHER_FAISABILITE = 0.2;
 
 const borne = (x: number) => Math.min(10, Math.max(0, x));
 const arrondi = (x: number) => Math.round(x * 100) / 100;
 
-export function scorer(i: Indicateurs): { score: number; detail: Record<keyof typeof POIDS, number> } {
-  const detail = {
+export type DetailScore = Record<keyof typeof POIDS | "faisabilite" | "potentiel", number>;
+
+export function scorer(i: Indicateurs): { score: number; detail: DetailScore } {
+  const criteres = {
     volume: borne((10 * Math.log10(Math.max(1, i.nbAvis))) / Math.log10(200)), // 200 avis = 10
     diversite: borne((i.nbApps - 1) * 2.5), // 1 appli = 0, 5 applis = 10
     paiement: borne(i.partPaiement * 20), // la moitié des avis = 10
     gravite: borne((i.graviteMoyenne - 1) * 5),
     besoin: borne(i.partBesoin * 10),
-    faisabilite: borne(i.faisabilite),
   };
-  const score = (Object.keys(POIDS) as (keyof typeof POIDS)[]).reduce((s, k) => s + detail[k] * POIDS[k], 0);
+  const potentiel = (Object.keys(POIDS) as (keyof typeof POIDS)[]).reduce((s, k) => s + criteres[k] * POIDS[k], 0);
+  const faisabilite = borne(i.faisabilite);
+  const score = potentiel * (PLANCHER_FAISABILITE + (1 - PLANCHER_FAISABILITE) * (faisabilite / 10));
+  const detail = { ...criteres, faisabilite, potentiel };
   return {
     score: arrondi(score),
-    detail: Object.fromEntries(Object.entries(detail).map(([k, v]) => [k, arrondi(v)])) as Record<keyof typeof POIDS, number>,
+    detail: Object.fromEntries(Object.entries(detail).map(([k, v]) => [k, arrondi(v)])) as DetailScore,
   };
+}
+
+// Fusionne les groupes dont les centres sont très proches (même problème formulé autrement).
+// Renvoie les nouveaux groupes (listes d'indices), les plus proches fusionnés en premier.
+export function fusionner(vecteurs: number[][], groupes: number[][], seuil: number): number[][] {
+  let courants = groupes.map((g) => [...g]);
+  for (;;) {
+    const centres = courants.map((g) => centre(vecteurs, g).centre);
+    let meilleur = { s: seuil, a: -1, b: -1 };
+    for (let a = 0; a < centres.length; a++) {
+      for (let b = a + 1; b < centres.length; b++) {
+        const s = centres[a].reduce((t, x, k) => t + x * centres[b][k], 0);
+        if (s >= meilleur.s) meilleur = { s, a, b };
+      }
+    }
+    if (meilleur.a < 0) return courants;
+    courants[meilleur.a].push(...courants[meilleur.b]);
+    courants = courants.filter((_, i) => i !== meilleur.b);
+  }
 }

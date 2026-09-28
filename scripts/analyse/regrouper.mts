@@ -1,10 +1,10 @@
 // Regroupe les plaintes de même sens, fait nommer chaque groupe par l'IA (titre, résumé, faisabilité),
 // calcule son score, puis remplace les groupes en base en une seule transaction.
-// Lancer : npx tsx --env-file=.env.local scripts/analyse/regrouper.mts [--seuil 0.75] [--taille-min 4] [--essai]
+// Lancer : npx tsx --env-file=.env.local scripts/analyse/regrouper.mts [--seuil 0.7] [--taille-min 4] [--essai]
 // --essai : affiche les plus gros groupes sans appeler l'IA ni rien enregistrer (pour régler le seuil).
 import { z } from "zod";
 import { depuisPgvector, versPgvector } from "../../src/lib/analyse/embeddings";
-import { centre, communautes, scorer } from "../../src/lib/analyse/regroupement";
+import { centre, communautes, fusionner, scorer } from "../../src/lib/analyse/regroupement";
 import { pause } from "../../src/lib/collecte/appstore";
 import { genererJson } from "../../src/lib/ia/gemini";
 import { avecJournal, db, toutLire, verifier } from "../lib/base";
@@ -13,8 +13,9 @@ const arg = (nom: string, defaut: number) => {
   const i = process.argv.indexOf(nom);
   return i > 0 ? Number(process.argv[i + 1]) : defaut;
 };
-const SEUIL = arg("--seuil", 0.75);
+const SEUIL = arg("--seuil", 0.7); // réglé le 28/09 : 0.75 coupait un même problème en plusieurs groupes
 const TAILLE_MIN = arg("--taille-min", 4);
+const SEUIL_FUSION = arg("--fusion", 0.8); // centres de groupes plus proches que ça = même problème
 const GROUPES_MAX = 150; // au-delà, les groupes sont trop petits pour valoir un appel à l'IA
 const LOT_NOMMAGE = 8;
 const ESSAI = process.argv.includes("--essai");
@@ -67,7 +68,7 @@ await avecJournal(
     const vecteurs = lignes.map((l) => depuisPgvector(l.embedding));
     bilan.avis = lignes.length;
 
-    const bruts = communautes(vecteurs, SEUIL, TAILLE_MIN)
+    const bruts = fusionner(vecteurs, communautes(vecteurs, SEUIL, TAILLE_MIN), SEUIL_FUSION)
       .sort((a, b) => b.length - a.length)
       .slice(0, GROUPES_MAX);
     bilan.groupes = bruts.length;

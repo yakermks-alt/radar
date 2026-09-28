@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { nettoyerVerdicts, type Verdict } from "../../src/lib/analyse/extraction";
-import { centre, communautes, POIDS, scorer } from "../../src/lib/analyse/regroupement";
+import { centre, communautes, fusionner, POIDS, scorer } from "../../src/lib/analyse/regroupement";
 
 // Vecteur normalisé proche d'un axe, avec un petit décalage pour varier les points.
 const autour = (axe: number, bruit: number, d = 8) => {
@@ -60,8 +60,28 @@ describe("scorer", () => {
     expect(scorer({ ...base, nbApps: 4 }).score).toBeGreaterThan(scorer({ ...base, nbApps: 1 }).score);
   });
 
+  it("fait chuter un problème impossible à résoudre seul, même très fort ailleurs", () => {
+    expect(scorer({ ...base, faisabilite: 0 }).score).toBe(2);
+    expect(scorer({ ...base, faisabilite: 1 }).score).toBeLessThan(scorer({ ...base, nbAvis: 10, faisabilite: 6 }).score);
+  });
+
   it("a des poids qui font 1", () => {
     expect(Object.values(POIDS).reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+  });
+});
+
+describe("fusionner", () => {
+  it("fusionne deux groupes au même centre et garde les autres", () => {
+    const v = [autour(0, 0), autour(0, 0.05), autour(0, 0.1), autour(0, 0.12), autour(4, 0), autour(4, 0.1)];
+    const r = fusionner(v, [[0, 1], [2, 3], [4, 5]], 0.95).map((g) => [...g].sort());
+    expect(r).toHaveLength(2);
+    expect(r).toContainEqual([0, 1, 2, 3]);
+    expect(r).toContainEqual([4, 5]);
+  });
+
+  it("ne fusionne rien sous le seuil", () => {
+    const v = [autour(0, 0), autour(4, 0)];
+    expect(fusionner(v, [[0], [1]], 0.9)).toEqual([[0], [1]]);
   });
 });
 
