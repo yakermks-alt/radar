@@ -33,17 +33,6 @@
     "secteur": "agriculture"
   },
   {
-    "storeId": "1632201493",
-    "nom": "Frais & Local: De saison !",
-    "editeur": "LMT Digital Creations",
-    "genre": "Shopping",
-    "noteMoyenne": 4.40541,
-    "nbNotes": 37,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/frais-local-de-saison/id1632201493",
-    "secteur": "agriculture"
-  },
-  {
     "storeId": "1560619294",
     "nom": "Pilot'Elevage",
     "editeur": "ELVUP",
@@ -1353,17 +1342,6 @@
     "secteur": "education-enfance"
   },
   {
-    "storeId": "1329982292",
-    "nom": "Meeko Family",
-    "editeur": "YKA",
-    "genre": "Education",
-    "noteMoyenne": 4.02273,
-    "nbNotes": 44,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/meeko-family/id1329982292",
-    "secteur": "education-enfance"
-  },
-  {
     "storeId": "1670557657",
     "nom": "Payer sa Nounou",
     "editeur": "Pierre Boudoin",
@@ -1384,17 +1362,6 @@
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/smoobu-app-pour-h%C3%B4tes/id6504219001",
     "secteur": "hotellerie-tourisme"
-  },
-  {
-    "storeId": "1473611841",
-    "nom": "Prix Immo - Vente immobilière",
-    "editeur": "Prix Immo",
-    "genre": "Finance",
-    "noteMoyenne": 4.60081,
-    "nbNotes": 4161,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/prix-immo-vente-immobili%C3%A8re/id1473611841",
-    "secteur": "immobilier"
   },
   {
     "storeId": "1645875352",
@@ -1925,17 +1892,6 @@
     "secteur": "sport-coaching"
   },
   {
-    "storeId": "6444290143",
-    "nom": "Champ'S - Live sport amateur",
-    "editeur": "Champ S",
-    "genre": "Sports",
-    "noteMoyenne": 3.27907,
-    "nbNotes": 43,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/champs-live-sport-amateur/id6444290143",
-    "secteur": "sport-coaching"
-  },
-  {
     "storeId": "1564539864",
     "nom": "Korper",
     "editeur": "KORPER",
@@ -1945,17 +1901,6 @@
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/korper/id1564539864",
     "secteur": "sport-coaching"
-  },
-  {
-    "storeId": "693137280",
-    "nom": "Heetch - Commandez un VTC 24/7",
-    "editeur": "Heetch",
-    "genre": "Travel",
-    "noteMoyenne": 4.76633,
-    "nbNotes": 241086,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/heetch-commandez-un-vtc-24-7/id693137280",
-    "secteur": "transport-livraison"
   },
   {
     "storeId": "897442736",
@@ -2263,28 +2208,6 @@
     "nbNotes": 108,
     "prix": "Gratuit",
     "url": "https://apps.apple.com/fr/app/yousign-signature-electronique/id6444097399",
-    "secteur": "vente-crm"
-  },
-  {
-    "storeId": "1485578688",
-    "nom": "Dynamics 365 Sales",
-    "editeur": "Microsoft Corporation",
-    "genre": "Business",
-    "noteMoyenne": 4.32258,
-    "nbNotes": 93,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/dynamics-365-sales/id1485578688",
-    "secteur": "vente-crm"
-  },
-  {
-    "storeId": "425356789",
-    "nom": "Pin Drop: Cartes & Lieux",
-    "editeur": "Salucia Ltd",
-    "genre": "Navigation",
-    "noteMoyenne": 4.47126,
-    "nbNotes": 87,
-    "prix": "Gratuit",
-    "url": "https://apps.apple.com/fr/app/pin-drop-cartes-lieux/id425356789",
     "secteur": "vente-crm"
   },
   {

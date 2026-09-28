@@ -40,7 +40,7 @@
 **But :** avoir de la matière première réelle.
 
 - [x] (Claude) 215 applis pro françaises dans 17 secteurs (recherche App Store + tri par Gemini Flash-Lite), `data/apps.json` (28/09)
-- [ ] (Claude) Nettoyer les dernières erreurs de tri (ex. Heetch, appli grand public)
+- [x] (Claude) 7 erreurs de tri écartées à la main (`data/exclusions.json`), 208 applis gardées (28/09)
 - [x] (Claude) Collecte incrémentale des avis (jusqu'à 500 par appli, pseudos jamais stockés), testée (28/09)
 - [x] (Claude) Tâche de nuit GitHub Actions (4 h 30), journal de chaque passage en base (28/09)
 

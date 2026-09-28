@@ -31,6 +31,13 @@ const appsJson = z
   )
   .parse(JSON.parse(readFileSync(new URL("../../data/apps.json", import.meta.url), "utf8")));
 
+// Applis écartées à la main après relecture (tri de l'IA imparfait) : désactivées en base.
+const exclusions = Object.keys(
+  z.record(z.string(), z.object({ nom: z.string(), raison: z.string() })).parse(
+    JSON.parse(readFileSync(new URL("../../data/exclusions.json", import.meta.url), "utf8")),
+  ),
+);
+
 // Les réponses Supabase sont { data, error } : on lève l'erreur, on renvoie data non nul.
 async function verifier<T>(p: PromiseLike<{ data: T; error: { message: string } | null }>): Promise<Exclude<T, null>> {
   const { data, error } = await p;
@@ -45,7 +52,7 @@ const bilan = { apps: 0, pages: 0, nouveaux: 0, ignores: 0, erreurs: [] as strin
 try {
   // 1. Synchronisation de la liste : ajout des nouvelles applis, mise à jour des notes.
   const synchro = await db.from("apps").upsert(
-      appsJson.map((a) => ({
+      appsJson.filter((a) => !exclusions.includes(a.storeId)).map((a) => ({
         store: "appstore",
         store_id: a.storeId,
         nom: a.nom,
@@ -60,6 +67,10 @@ try {
       { onConflict: "store,store_id" },
     );
   if (synchro.error) throw new Error(synchro.error.message);
+  if (exclusions.length) {
+    const desactivation = await db.from("apps").update({ active: false }).in("store_id", exclusions);
+    if (desactivation.error) throw new Error(desactivation.error.message);
+  }
   const apps = await verifier(db.from("apps").select("id, store_id, nom").eq("active", true).order("id"));
 
   // 2. Avis, appli par appli. Une appli en erreur n'arrête pas la collecte des autres.

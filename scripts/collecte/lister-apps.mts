@@ -2,7 +2,7 @@
 // fait trier par Gemini Flash-Lite les vrais outils pro (et écarter les applis grand public),
 // puis écrit la liste dans data/apps.json (relue avant d'être synchronisée en base).
 // Lancer : npx tsx --env-file=.env.local scripts/collecte/lister-apps.mts
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import { lireRecherche, pause, recupererJson, urlRecherche, type AppTrouvee } from "../../src/lib/collecte/appstore";
 import { genererJson } from "../../src/lib/ia/gemini";
@@ -27,6 +27,9 @@ const SECTEURS: Record<string, string[]> = {
   associations: ["gestion association", "adhérents association"],
 };
 
+// Applis écartées à la main après relecture : jamais reproposées.
+const EXCLUSIONS = new Set(Object.keys(JSON.parse(readFileSync(new URL("../../data/exclusions.json", import.meta.url), "utf8"))));
+
 const NOTES_MIN = 30; // en dessous, trop peu d'avis pour dégager des tendances
 const LOT_TRI = 40;
 
@@ -38,7 +41,7 @@ for (const [secteur, termes] of Object.entries(SECTEURS)) {
     const apps = json ? lireRecherche(json) : [];
     let nouvelles = 0;
     for (const a of apps) {
-      if (a.nbNotes < NOTES_MIN || trouvees.has(a.storeId)) continue;
+      if (a.nbNotes < NOTES_MIN || trouvees.has(a.storeId) || EXCLUSIONS.has(a.storeId)) continue;
       trouvees.set(a.storeId, { ...a, secteur });
       nouvelles++;
     }
