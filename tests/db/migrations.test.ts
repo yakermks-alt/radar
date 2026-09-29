@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const DIR = join(__dirname, "../../supabase/migrations");
 const MIGRATIONS = readdirSync(DIR).filter((f) => f.endsWith(".sql")).sort();
-const TABLES = ["apps", "avis", "groupes", "groupes_avis", "journal"];
+const TABLES = ["apps", "avis", "groupes", "groupes_avis", "journal", "enquetes", "etapes", "sources"];
 
 // Supabase donne par défaut tous les droits aux rôles publics sur les nouvelles tables :
 // c'est précisément ce que les migrations doivent neutraliser.
@@ -185,5 +185,70 @@ describe("contexte des groupes (0003)", () => {
 
   it("reste fermée aux clés publiques", async () => {
     await expect(en("anon", "select public.remplacer_groupes('[]'::jsonb)")).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("enquêtes de l'agent (0004)", () => {
+  const etape = (numero: number, extra: Record<string, unknown> = {}) =>
+    JSON.stringify({ numero, pensee: "p", outil: "chercher_avis", argument: "a", statut: "ok", resultat: "r", observation: "o", duree_ms: 10, ...extra });
+  let id: number;
+
+  beforeAll(async () => {
+    const { rows } = await db.query<{ id: number }>("insert into public.enquetes (sujet) values ('logiciels pour boulangeries') returning id");
+    id = rows[0].id;
+  });
+
+  for (const role of ["anon", "authenticated"] as const) {
+    it(`${role} ne peut appeler aucune fonction de l'agent`, async () => {
+      await expect(en(role, "select * from public.prendre_enquete()")).rejects.toThrow(/permission denied/);
+      await expect(en(role, `select public.enregistrer_etape(1, '{}'::jsonb)`)).rejects.toThrow(/permission denied/);
+      await expect(en(role, "select * from public.avis_proches('[0]')")).rejects.toThrow(/permission denied/);
+    });
+  }
+
+  it("verrouille une enquête : une deuxième exécution ne la prend pas", async () => {
+    const r1 = await en("service_role", `select id, statut from public.prendre_enquete(interval '5 minutes', ${id})`);
+    expect(r1.rows).toEqual([{ id, statut: "en_cours" }]);
+    const r2 = await en("service_role", `select id from public.prendre_enquete(interval '5 minutes', ${id})`);
+    expect(r2.rows).toEqual([]);
+  });
+
+  it("reprend une enquête dont le verrou a expiré", async () => {
+    await db.exec(`update public.enquetes set verrou_jusqu_a = now() - interval '1 minute' where id = ${id}`);
+    const { rows } = await en("service_role", `select id from public.prendre_enquete(interval '5 minutes', ${id})`);
+    expect(rows).toEqual([{ id }]);
+  });
+
+  it("enregistre les étapes dans l'ordre, avec leurs sources", async () => {
+    const sources = JSON.stringify([{ url: "https://exemple.fr", titre: "Prix", texte: "19 € par mois", suspecte: false }]);
+    await en("service_role", `select public.enregistrer_etape(${id}, '${etape(1)}'::jsonb, '${sources}'::jsonb)`);
+    const maj = JSON.stringify([{ url: "https://exemple.fr", titre: "Prix", texte: "page entière", suspecte: true }]);
+    await en("service_role", `select public.enregistrer_etape(${id}, '${etape(2)}'::jsonb, '${maj}'::jsonb)`);
+    const { rows } = await db.query<{ etapes_faites: number }>(`select etapes_faites from public.enquetes where id = ${id}`);
+    expect(rows[0].etapes_faites).toBe(2);
+    const { rows: s } = await db.query(`select texte, suspecte from public.sources where enquete_id = ${id}`);
+    expect(s).toEqual([{ texte: "page entière", suspecte: true }]); // même URL relue : mise à jour
+  });
+
+  it("refuse une étape en double ou sautée (exécution en retard)", async () => {
+    await expect(en("service_role", `select public.enregistrer_etape(${id}, '${etape(2)}'::jsonb)`)).rejects.toThrow(/Étape 3 attendue/);
+    await expect(en("service_role", `select public.enregistrer_etape(${id}, '${etape(5)}'::jsonb)`)).rejects.toThrow(/Étape 3 attendue/);
+  });
+
+  it("refuse un outil inconnu et une source qui n'est pas une page web", async () => {
+    await expect(en("service_role", `select public.enregistrer_etape(${id}, '${etape(3, { outil: "executer_code" })}'::jsonb)`)).rejects.toThrow(/check constraint/);
+    const s = JSON.stringify([{ url: "file:///etc/passwd", texte: "x" }]);
+    await expect(en("service_role", `select public.enregistrer_etape(${id}, '${etape(3)}'::jsonb, '${s}'::jsonb)`)).rejects.toThrow(/check constraint/);
+    const { rows } = await db.query<{ etapes_faites: number }>(`select etapes_faites from public.enquetes where id = ${id}`);
+    expect(rows[0].etapes_faites).toBe(2); // rien d'enregistré à moitié
+  });
+
+  it("trouve les avis les plus proches d'un texte", async () => {
+    const v = (x: number) => `[${Array.from({ length: 384 }, () => String(x)).join(",")}]`;
+    await db.exec(`update public.avis set embedding = '${v(0.1)}'`);
+    const { rows } = await en("service_role", `select contenu, app, similarite from public.avis_proches('${v(0.1)}', 5)`);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ app: "Appli test" });
+    expect((rows[0] as { similarite: number }).similarite).toBeCloseTo(1, 3);
   });
 });

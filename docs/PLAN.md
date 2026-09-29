@@ -81,11 +81,17 @@
 
 **But :** le cœur compliqué, et la démo qui impressionne.
 
-- [ ] (Claude) Outils de l'agent : chercher sur le web, lire une page, interroger les données entreprises, chercher dans les avis par sens
-- [ ] (Claude) Boucle de l'agent : il choisit ses outils lui-même, avec un budget maximal par enquête (nombre d'étapes, quota)
-- [ ] (Claude) Rapport structuré (concurrents et leurs prix, taille du marché, angle d'attaque, risques). Chaque phrase cite sa source, sinon elle est rejetée
-- [ ] (Claude) Chaque étape de l'agent est une exécution courte, état enregistré en base, étape suivante en file d'attente (reprise après coupure), étapes affichées en direct à l'écran
-- [ ] (Claude) Protection contre les pages web piégées (instructions cachées destinées à l'agent)
+**Constat du 29/09 :** la recherche Google intégrée à Gemini n'est plus gratuite (« Not available » en offre gratuite, refus 429). Remplacée par Tavily (1 000 recherches/mois gratuites, sans carte). Voir `docs/LIMITES.md`.
+
+- [x] (Claude) Outils de l'agent : chercher sur le web (Tavily), lire une page, fiches officielles d'entreprises (API Recherche d'entreprises), chercher dans les avis par sens (pgvector) (29/09)
+- [x] (Claude) Boucle de l'agent : il choisit ses outils lui-même (Flash-Lite), budget d'étapes par enquête, rédaction forcée à la dernière étape, un outil en panne devient une étape ratée et l'agent change d'approche (29/09)
+- [x] (Claude) Rapport structuré en 5 sections (problème, concurrents et prix, taille du marché, angle d'attaque, risques) : chaque affirmation doit citer mot pour mot une source lue, sinon elle est rejetée et listée (29/09)
+- [x] (Claude) État en base après chaque étape (migration 0004 : `enquetes`, `etapes`, `sources`), verrou par enquête, reprise après coupure, file d'attente (`--file`) (29/09)
+- [x] (Claude) Protection contre les pages piégées : texte caché retiré, instructions pour IA repérées (page marquée suspecte), zones « données non fiables » impossibles à refermer depuis la page, seules les URL trouvées par la recherche sont lisibles, adresses internes refusées (29/09)
+- [ ] (Toi) Coller la migration `0004_enquetes.sql` dans Supabase (SQL Editor)
+- [ ] (Toi) Créer un compte gratuit sur tavily.com et mettre la clé dans `.env.local` : `TAVILY_API_KEY=...`
+- [ ] (Claude) Première vraie enquête, réglage des consignes de l'agent d'après le résultat
+- [ ] (Claude) Enquête lancée depuis une page, étapes affichées en direct (Supabase Realtime), exécution par la tâche GitHub
 
 **Fin de phase :** on tape « logiciels pour boulangeries », on regarde l'agent enquêter, et on obtient un rapport sourcé en quelques minutes.
 

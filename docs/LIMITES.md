@@ -9,12 +9,20 @@
 | Flash (3.5 à 3.8) | **~20 requêtes/jour**, 5/min (mesuré le 02/09/2026, Google ne publie plus le chiffre) | Rédaction finale des rapports seulement |
 | Flash-Lite (3.1, 3.5) | ~500 requêtes/jour, 15/min, Batch gratuit | Tri et extraction des avis (par lots de ~50 avis par requête), étapes de l'agent |
 | Embedding 2 | ~1 000 requêtes/jour, 100/min | Plan B seulement (voir embeddings locaux) |
-| Recherche Google intégrée | 5 000 recherches/mois (famille 3.x) | Recherche web de l'agent |
+| Recherche Google intégrée | **Plus gratuite** (vérifié le 29/09/2026 : « Not available » en offre gratuite, refus 429) | Remplacée par Tavily (voir plus bas) |
 | Pro | Plus de gratuit depuis le 01/04/2026 | Non utilisé |
 
 - Le quota est compté **par projet Google**, pas par clé : Radar doit avoir son propre projet Google pour ne rien prendre aux autres applis.
 - Remise à zéro à minuit heure du Pacifique (9 h du matin en France).
 - Conséquence : une enquête de l'agent doit tenir en ~1 appel Flash + 15-30 appels Flash-Lite. Ça donne environ 15 enquêtes par jour au maximum, et c'est l'offre gratuite de Radar qui doit l'encadrer.
+
+## Recherche web de l'agent : Tavily
+
+- Offre gratuite : **1 000 recherches/mois**, sans carte bancaire, remise à zéro chaque mois (donc aucun dépassement facturé possible). Une recherche « basic » = 1 crédit.
+- Conséquence : ~5 recherches par enquête, soit environ 6 enquêtes par jour au maximum.
+- Écartés : Brave (offre gratuite supprimée en février 2026, carte exigée), Bing (API fermée en août 2025), Serper (2 500 requêtes une seule fois), recherche Google de Gemini (plus gratuite).
+- Lecture des pages : faite par Radar lui-même (pas de service tiers), avec garde-fous (adresses internes refusées, texte caché retiré).
+- Fiches d'entreprises : API Recherche d'entreprises de l'État, gratuite et sans clé (7 requêtes/s). Elle ne sert pas à compter les entreprises d'un code NAF : ses totaux plafonnent à 10 000.
 
 ## Embeddings : en local plutôt que par l'API
 
@@ -48,6 +56,9 @@ Chaque étape de l'agent est une petite exécution courte. L'état de l'enquête
 C'est plus dur à construire qu'une longue exécution, mais c'est le point technique le plus intéressant du projet.
 
 ## Sources
+
+- https://ai.google.dev/gemini-api/docs/pricing (page du 24/09/2026 : recherche Google « Not available » en gratuit)
+- https://parallel.ai/articles/best-free-web-search-api
 
 - https://ai.google.dev/gemini-api/docs/pricing
 - https://dev.to/romeroyang/geminis-free-tier-measured-20-requests-a-day-and-google-no-longer-publishes-the-number-4gf2
