@@ -3,6 +3,7 @@
 // autre modèle). Résultat : le taux d'invention, à comparer au seuil de 5 %.
 // Lancer  : npx tsx --env-file=.env.local scripts/banc/banc.mts [--taille 20] [--budget 12]
 // Évaluer : npx tsx --env-file=.env.local scripts/banc/banc.mts --evaluer <nom>   (réévalue un passage, ex. quand Flash est libre)
+// Compléter : npx tsx --env-file=.env.local scripts/banc/banc.mts --continuer <nom> (lance les sujets manquants d'un passage coupé par le quota)
 // Bilan   : npx tsx --env-file=.env.local scripts/banc/banc.mts --bilan <nom>     (écrit docs/banc/<nom>.md, sans IA)
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -26,8 +27,10 @@ const enquetesDuBanc = (nom: string): Promise<Ligne[]> =>
 
 async function lancer(nom: string, taille: number, budget: number) {
   const sujets: string[] = JSON.parse(readFileSync(join(RACINE, "docs/banc-sujets.json"), "utf8"));
-  console.log(`Banc « ${nom} » : ${Math.min(taille, sujets.length)} enquêtes, ${budget} étapes au plus chacune`);
-  for (const sujet of sujets.slice(0, taille)) {
+  const faits = new Set((await enquetesDuBanc(nom)).map((e) => e.sujet));
+  const aFaire = sujets.slice(0, taille).filter((s) => !faits.has(s));
+  console.log(`Banc « ${nom} » : ${aFaire.length} enquête(s) à lancer, ${budget} étapes au plus chacune`);
+  for (const sujet of aFaire) {
     const { id }: { id: number } = await verifier(db.from("enquetes").insert({ sujet, budget, banc: nom }).select("id").single());
     if ((await prendre(id)) === null) continue;
     const debut = Date.now();
@@ -80,16 +83,16 @@ function resume(nom: string, lignes: Ligne[]): string {
   const recherches = lignes.reduce((s, l) => s + (l.mesures.recherches ?? 0), 0);
   const cache = lignes.reduce((s, l) => s + (l.mesures.recherches_cache ?? 0) + (l.mesures.pages_cache ?? 0), 0);
   const durees = lignes.map((l) => l.mesures.duree_s ?? 0).filter((d) => d > 0);
-  const verdict = b.taux_invention === null ? "pas encore mesuré" : b.taux_invention <= SEUIL_INVENTION ? "objectif atteint" : "objectif NON atteint";
+  const verdict = b.taux_invention === null ? "NON MESURÉ : aucun rapport relu par l'IA" : b.taux_invention <= SEUIL_INVENTION ? "objectif atteint" : "objectif NON atteint";
   const somme = (f: (e: Evaluation) => number) => evals.reduce((s, e) => s + (e ? f(e) : 0), 0);
   return [
     `# Banc de tests « ${nom} »`,
     "",
-    `**Taux d'invention : ${pct(b.taux_invention)}** (${b.inventions} affirmations fautives sur ${b.gardees} gardées ; objectif ≤ ${pct(SEUIL_INVENTION)} : ${verdict}).`,
+    `**Taux d'invention : ${pct(b.taux_invention)}** (${b.inventions} affirmations fautives sur ${b.gardees} gardées dans les ${b.relues_par_ia} rapports relus ; objectif ≤ ${pct(SEUIL_INVENTION)} : ${verdict}).`,
     "",
-    `- Enquêtes : ${b.terminees} terminées et évaluées sur ${b.enquetes} ; ${b.relues_par_ia} relues par un modèle IA`,
+    `- Enquêtes : ${b.terminees} terminées et évaluées sur ${b.enquetes} ; ${b.relues_par_ia} relues par un modèle IA ; ${b.fautes_mecaniques} faute(s) mécanique(s) sur l'ensemble (citation absente, chiffre non prouvé)`,
     `- Détail des fautes : ${somme((e) => e.citations_absentes)} citation(s) absente(s) de la source, ${somme((e) => e.chiffres_non_prouves)} chiffre(s) non prouvé(s), ${somme((e) => e.non_prouvees_juge)} affirmation(s) jugée(s) non prouvée(s) par le relecteur`,
-    `- Sections remplies : ${b.sections_couvertes_moyenne?.toFixed(1).replace(".", ",") ?? "n.d."} sur 5 en moyenne ; ${(b.gardees / Math.max(1, b.terminees)).toFixed(1).replace(".", ",")} affirmations par rapport`,
+    `- Sections remplies : ${b.sections_couvertes_moyenne?.toFixed(1).replace(".", ",") ?? "n.d."} sur 5 en moyenne ; ${(evals.reduce((s, e) => s + (e?.gardees ?? 0), 0) / Math.max(1, b.terminees)).toFixed(1).replace(".", ",")} affirmations par rapport`,
     `- Consommation : ${appels} appels à l'IA, ${recherches} recherches web, ${cache} lectures servies par le cache ; durée médiane ${durees.length ? Math.round(durees.sort((x, y) => x - y)[Math.floor(durees.length / 2)]) : "n.d."} s`,
     "",
     "| Enquête | Statut | Gardées | Fautives | Sections | Relecteur | Durée |",
@@ -105,10 +108,14 @@ function resume(nom: string, lignes: Ligne[]): string {
 async function main() {
   const aEvaluer = arg("--evaluer");
   const aResumer = arg("--bilan");
+  const aContinuer = arg("--continuer");
   let nom: string;
   if (aResumer) nom = aResumer;
   else if (aEvaluer) nom = aEvaluer;
-  else {
+  else if (aContinuer) {
+    nom = aContinuer;
+    await lancer(nom, 20, Number(arg("--budget") ?? 12));
+  } else {
     nom = `banc-${new Date().toISOString().slice(0, 16).replace(/[T:]/g, "-")}`;
     await lancer(nom, Number(arg("--taille") ?? 20), Number(arg("--budget") ?? 12));
   }
@@ -120,7 +127,7 @@ async function main() {
   // L'exécution est rouge si l'objectif n'est pas atteint (pas à cause d'une enquête interrompue :
   // elle reprendra toute seule).
   const b = bilan((await enquetesDuBanc(nom)).map((l) => l.mesures.evaluation ?? null), 0);
-  process.exitCode = b.taux_invention !== null && b.taux_invention > SEUIL_INVENTION ? 1 : 0;
+  process.exitCode = b.taux_invention !== null && b.taux_invention <= SEUIL_INVENTION ? 0 : 1; // rouge si non mesuré
   if (aResumer) {
     mkdirSync(join(RACINE, "docs/banc"), { recursive: true });
     writeFileSync(join(RACINE, `docs/banc/${nom}.md`), texte);

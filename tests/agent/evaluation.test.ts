@@ -44,12 +44,22 @@ describe("evaluerRapport", () => {
 });
 
 describe("bilan", () => {
-  it("calcule le taux d'invention sur toutes les affirmations gardées", () => {
-    const e1 = evaluerRapport(rapport([bonne1, bonne2]), sources, [{ numero: 1, prouve: true }, { numero: 2, prouve: true }], "flash");
-    const e2 = evaluerRapport(rapport([bonne1, { ...bonne2, texte: "L'offre Pro coûte 12 € HT." }]), sources, [{ numero: 1, prouve: true }, { numero: 2, prouve: true }], "flash");
+  const ok = [{ numero: 1, prouve: true }, { numero: 2, prouve: true }];
+  it("calcule le taux d'invention sur les affirmations des rapports relus", () => {
+    const e1 = evaluerRapport(rapport([bonne1, bonne2]), sources, ok, "flash");
+    const e2 = evaluerRapport(rapport([bonne1, { ...bonne2, texte: "L'offre Pro coûte 12 € HT." }]), sources, ok, "flash");
     expect(bilan([e1, e2, null], 3)).toEqual({
-      enquetes: 3, terminees: 2, gardees: 4, inventions: 1, taux_invention: 0.25, sections_couvertes_moyenne: 2, relues_par_ia: 2,
+      enquetes: 3, terminees: 2, relues_par_ia: 2, gardees: 4, inventions: 1, taux_invention: 0.25, fautes_mecaniques: 1, sections_couvertes_moyenne: 2,
     });
+  });
+  it("ne mesure rien quand aucun rapport n'a pu être relu (quota épuisé)", () => {
+    const e = evaluerRapport(rapport([bonne1, bonne2]), sources, null, null);
+    expect(bilan([e], 1)).toMatchObject({ relues_par_ia: 0, gardees: 0, taux_invention: null });
+  });
+  it("ignore les rapports non relus dans le taux", () => {
+    const relu = evaluerRapport(rapport([bonne1, bonne2]), sources, ok, "flash");
+    const nonRelu = evaluerRapport(rapport([bonne1, bonne2]), sources, null, null);
+    expect(bilan([relu, nonRelu], 2)).toMatchObject({ relues_par_ia: 1, gardees: 2, taux_invention: 0 });
   });
 });
 

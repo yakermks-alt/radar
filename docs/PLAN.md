@@ -107,10 +107,12 @@
 
 **But :** passer de « ça marche parfois » à « ça marche ».
 
-- [ ] (Claude) Banc de tests : 20 enquêtes de référence, avec vérification automatique que chaque citation existe dans sa source
-- [ ] (Claude) Mesure du taux d'invention, puis corrections jusqu'à un seuil acceptable
-- [ ] (Claude) Cache des pages déjà lues, relances automatiques, garde-fous sur les quotas gratuits
-- [ ] (Claude) Suivi de chaque enquête : durée, étapes, quota consommé, échecs
+- [x] (Claude) Banc de tests (29-30/09) : 20 sujets de référence (`docs/banc-sujets.json`), workflow `banc.yml`, évaluation indépendante de chaque affirmation gardée : citation revérifiée dans la source enregistrée, chiffres présents dans la citation, relecture par un modèle plus exigeant (Flash de préférence). Migration 0006
+- [x] (Claude) Suivi de chaque enquête (29/09) : durée, appels à l'IA par modèle, recherches web, pages, lectures en cache, étapes ratées, reprises ; affiché en bas du rapport
+- [x] (Claude) Garde-fous (29/09) : cache de 7 jours des recherches et des pages (table `cache_web`), plafond de 900 recherches web par mois, quota Gemini épuisé = attente jusqu'à sa remise à zéro, reprise automatique chaque heure des enquêtes interrompues ou oubliées (5 fois au plus, puis échec), contrôle sans IA « chiffre non prouvé »
+- [x] (Claude) **Premier banc** (`docs/banc/banc-2026-09-29-22-07.md`) : 19/20 enquêtes, **taux d'invention 33 %** (41 sur 123), 0 citation absente, 0 chiffre inventé. Fautes = généralisations d'un seul avis, qualificatifs ajoutés, promesses d'éditeur présentées comme des faits, et relecteur privé du titre de la source. Corrigé : consignes d'écriture fidèle, relecture intégrée aussi exigeante que l'évaluateur, titre et adresse de la source donnés aux relecteurs
+- [ ] (Claude) **Deuxième banc** (`banc-2026-09-29-22-30`) : 8 enquêtes faites avant l'épuisement du quota Flash-Lite, jamais relues par l'IA (taux non mesuré). À faire après 10 h : `banc.yml` avec « continuer = banc-2026-09-29-22-30 » (les 12 sujets restants + évaluation), puis réévaluation avec Flash si besoin
+- [ ] (Claude) Corriger jusqu'à un taux d'invention ≤ 5 %, mesuré par un relecteur Flash
 
 **Fin de phase :** des chiffres de fiabilité réels à montrer.
 

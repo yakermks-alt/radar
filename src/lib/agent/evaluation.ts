@@ -83,24 +83,29 @@ export function evaluerRapport(
 export type Bilan = {
   enquetes: number;
   terminees: number;
-  gardees: number;
-  inventions: number;
-  taux_invention: number | null;
-  sections_couvertes_moyenne: number | null;
   relues_par_ia: number;
+  gardees: number; // sur les rapports relus par l'IA seulement
+  inventions: number; // idem
+  taux_invention: number | null; // null : aucun rapport relu, donc rien de mesuré
+  fautes_mecaniques: number; // citations absentes et chiffres non prouvés, sur tous les rapports
+  sections_couvertes_moyenne: number | null;
 };
 
+// Le taux d'invention ne se calcule que sur les rapports relus par un modèle : sans relecture, les
+// seuls contrôles mécaniques ne voient pas les généralisations ni les affirmations hors sujet.
 export function bilan(evaluations: (Evaluation | null)[], total: number): Bilan {
   const ev = evaluations.filter((e): e is Evaluation => e !== null);
-  const gardees = ev.reduce((s, e) => s + e.gardees, 0);
-  const inventions = ev.reduce((s, e) => s + e.inventions, 0);
+  const relues = ev.filter((e) => e.juge !== null);
+  const gardees = relues.reduce((s, e) => s + e.gardees, 0);
+  const inventions = relues.reduce((s, e) => s + e.inventions, 0);
   return {
     enquetes: total,
     terminees: ev.length,
+    relues_par_ia: relues.length,
     gardees,
     inventions,
     taux_invention: gardees ? inventions / gardees : null,
+    fautes_mecaniques: ev.reduce((s, e) => s + e.citations_absentes + e.chiffres_non_prouves, 0),
     sections_couvertes_moyenne: ev.length ? ev.reduce((s, e) => s + e.sections_couvertes, 0) / ev.length : null,
-    relues_par_ia: ev.filter((e) => e.juge !== null).length,
   };
 }

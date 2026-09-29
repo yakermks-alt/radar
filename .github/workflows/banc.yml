@@ -15,6 +15,10 @@ on:
         description: Réévaluer un passage existant (nom « banc-… »), sans relancer d'enquête
         required: false
         type: string
+      continuer:
+        description: Compléter un passage coupé par le quota (nom « banc-… »), puis l'évaluer
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -36,11 +40,13 @@ jobs:
       # Jamais interpolés directement dans une commande : passés par variable, puis vérifiés.
       TAILLE: ${{ inputs.taille }}
       EVALUER: ${{ inputs.evaluer }}
+      CONTINUER: ${{ inputs.continuer }}
     steps:
       - name: Vérifier les paramètres
         run: |
           [[ "$TAILLE" =~ ^([1-9]|1[0-9]|20)$ ]] || { echo "Taille invalide (1 à 20)"; exit 1; }
           [[ -z "$EVALUER" || "$EVALUER" =~ ^banc-[0-9-]{16}$ ]] || { echo "Nom de passage invalide"; exit 1; }
+          [[ -z "$CONTINUER" || "$CONTINUER" =~ ^banc-[0-9-]{16}$ ]] || { echo "Nom de passage invalide"; exit 1; }
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
@@ -54,5 +60,6 @@ jobs:
           key: modele-embeddings-paraphrase-multilingual-minilm-l12-v2
       - name: Banc de tests
         run: |
-          if [[ -n "$EVALUER" ]]; then npx tsx scripts/banc/banc.mts --evaluer "$EVALUER"
+          if [[ -n "$CONTINUER" ]]; then npx tsx scripts/banc/banc.mts --continuer "$CONTINUER"
+          elif [[ -n "$EVALUER" ]]; then npx tsx scripts/banc/banc.mts --evaluer "$EVALUER"
           else npx tsx scripts/banc/banc.mts --taille "$TAILLE"; fi
