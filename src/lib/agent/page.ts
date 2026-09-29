@@ -103,6 +103,8 @@ export function extraireTexte(html: string): { titre: string | null; texte: stri
   const texte = decoder(
     h
       .replace(/<(br|\/p|\/div|\/li|\/h[1-6]|\/tr|\/section|\/article)\b[^>]*>/gi, "\n")
+      // Balises en ligne collées : « <span>5</span><span>,40</span> » doit donner « 5,40 ».
+      .replace(/<\/?(span|a|b|strong|em|i|u|sup|sub|small|mark|abbr|bdi|data|time|s)\b[^>]*>/gi, "")
       .replace(/<[^>]+>/g, " "),
   )
     .replace(/[ \t\f\v ]+/g, " ")

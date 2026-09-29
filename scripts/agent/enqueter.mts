@@ -7,6 +7,7 @@ import { avancer, decision, rapportBrut, type AvisProche, type Dependances, type
 import { chercherEntreprises, rechercherWeb } from "../../src/lib/agent/outils";
 import { lirePage } from "../../src/lib/agent/page";
 import { vectoriser, versPgvector } from "../../src/lib/analyse/embeddings";
+import { creerCompteur } from "../../src/lib/marche/sirene";
 import { genererJson, MODELES_REDACTION, ModeleIndisponible, QuotaEpuise } from "../../src/lib/ia/gemini";
 import { db, sansErreur, toutLire, verifier } from "../lib/base";
 
@@ -38,6 +39,7 @@ const deps: Dependances = {
     return lignes satisfies AvisProche[];
   },
   entreprises: (recherche) => chercherEntreprises(recherche),
+  compterNaf: process.env.INSEE_API_KEY ? creerCompteur(process.env.INSEE_API_KEY) : undefined,
 };
 
 async function charger(id: number): Promise<Etat> {

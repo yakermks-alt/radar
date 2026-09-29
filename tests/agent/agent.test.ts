@@ -150,3 +150,19 @@ describe("rédaction trop tôt", () => {
     expect(promptDecision(etat)).toContain("0 recherche(s) web, 1 page(s) lue(s)");
   });
 });
+
+describe("taille du marché", () => {
+  it("compte les entreprises d'un code NAF et en fait une source citable", async () => {
+    const d = deps([{ pensee: "", outil: "entreprises", argument: "10.71c" }], { compterNaf: vi.fn(async () => 40561), maintenant: () => Date.parse("2026-09-29T12:00:00Z") });
+    const a = await avancer(vide, d);
+    expect(a.etape).toMatchObject({ statut: "ok", resultat: "40 561 entreprises actives (NAF 10.71C)".replace(" ", "\u202f") });
+    expect(a.sources[0].texte).toMatch(/^Au 2026-09-29, 40.561 entreprises actives en France ont pour activité principale le code NAF 10\.71C/);
+    expect(d.entreprises).not.toHaveBeenCalled();
+  });
+  it("cherche une société quand l'argument n'est pas un code NAF", async () => {
+    const d = deps([{ pensee: "", outil: "entreprises", argument: "BoulangePro" }], { compterNaf: vi.fn(async () => 1) });
+    await avancer(vide, d);
+    expect(d.compterNaf).not.toHaveBeenCalled();
+    expect(d.entreprises).toHaveBeenCalledWith("BoulangePro");
+  });
+});

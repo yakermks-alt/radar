@@ -41,6 +41,10 @@ describe("extraireTexte", () => {
     for (const mot of ["ignore", "x()", "caché", "attribut", "aria", "lecteur", "minuscule"]) expect(texte).not.toContain(mot);
   });
 
+  it("recolle un prix découpé en plusieurs balises", () => {
+    expect(extraireTexte(`<p><span>€</span> <span>5</span><span>,40</span><sup>/mois</sup> HT</p>`).texte).toBe("€ 5,40/mois HT");
+  });
+
   it("garde ce qui n'est pas vraiment invisible", () => {
     const { texte } = extraireTexte(`<div style="overflow:hidden">débordement</div><div class="hidden md:block">bureau</div><p style="opacity:0.8">opaque</p>`);
     expect(texte).toContain("débordement");

@@ -38,3 +38,23 @@ describe("verifierAffirmations", () => {
     expect(rejetees[0].raison).toBe("citation trop courte");
   });
 });
+
+describe("tolérance sur la forme, jamais sur les mots", () => {
+  const liste = new Map([["https://abby.fr/tarifs", "100% gratuit, sans engagement\nFacturation électronique\nDevis & factures illimités\nPro : 9,00 €/mois HT, puis 15 € après la promotion."]]);
+  const v = (citation: string) => verifierAffirmations([{ texte: "x", source: "https://abby.fr/tarifs", citation }], liste);
+
+  it("accepte une liste à puces recopiée avec des virgules", () => {
+    expect(v("100% gratuit, sans engagement, Facturation électronique, Devis & factures illimités").gardees).toHaveLength(1);
+  });
+  it("accepte un passage sauté avec « … » si chaque morceau est exact et dans l'ordre", () => {
+    expect(v("100% gratuit, sans engagement … Pro : 9,00 €/mois HT").gardees).toHaveLength(1);
+    expect(v("Pro : 9,00 €/mois HT […] 100% gratuit, sans engagement").rejetees[0].raison).toBe("citation introuvable");
+  });
+  it("refuse un chiffre changé, même d'un seul caractère", () => {
+    expect(v("Pro : 9,00 €/mois HT, puis 150 € après").rejetees).toHaveLength(1);
+    expect(v("Pro : 9,50 €/mois HT, puis 15 € après").rejetees).toHaveLength(1);
+  });
+  it("refuse un morceau trop court après « … »", () => {
+    expect(v("100% gratuit, sans engagement … Pro").rejetees[0].raison).toBe("citation trop courte");
+  });
+});
