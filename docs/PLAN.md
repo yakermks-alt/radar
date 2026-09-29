@@ -99,9 +99,9 @@
 - [x] (Claude) Workflow GitHub `enquete.yml` prêt pour la mise en ligne (numéro vérifié avant usage), clé Tavily dans les secrets (29/09)
 - [x] (Claude) **Mise en ligne** (29/09) : https://radar-opportunites.netlify.app (équipe Netlify workflowly, site `radar-opportunites`). Variables : URL et clé publique Supabase, clé secrète Supabase et code d'accès en secret (production et aperçus). Pas de clé Gemini/Tavily/Insee sur Netlify : l'agent tourne sur GitHub. En-têtes de sécurité (CSP sur le seul projet Supabase). Connexion Netlify obligatoire gardée sur les aperçus seulement. Publication : `netlify deploy --prod` répond « Forbidden » (comme pour Liǎng) ; contournement : `npx netlify deploy --build` puis `npx netlify api restoreSiteDeploy --data '{"site_id":"32657b1d-c544-4120-877f-2a5238728c89","deploy_id":"<id>"}'`
 - [x] (Claude) Test en production : agent lancé sur GitHub (`enquete.yml`), suivi en direct sur le site en ligne (8 signaux temps réel reçus, rapport affiché sans recharger), aucune erreur navigateur ; mauvais code d'accès refusé (29/09)
-- [ ] (Toi) Jeton GitHub à droits limités (dépôt radar, « Actions : lecture et écriture ») dans `.env.local` (`GITHUB_DISPATCH_TOKEN`) ; Claude le pose sur Netlify et republie : le bouton « Lancer l'enquête » du site marchera alors
+- [x] (Toi + Claude) Jeton GitHub à droits limités (dépôt radar seulement, « Actions : lecture et écriture ») posé sur Netlify ; enquête lancée depuis le site en ligne, menée par GitHub et suivie en direct jusqu'au rapport (29/09). **Phase 4 terminée**
 
-**Fin de phase :** on tape « logiciels pour boulangeries », on regarde l'agent enquêter, et on obtient un rapport sourcé en quelques minutes. **Atteint en local le 29/09** (reste la mise en ligne).
+**Fin de phase :** on tape « logiciels pour boulangeries », on regarde l'agent enquêter, et on obtient un rapport sourcé en quelques minutes. **Atteint le 29/09, en ligne.**
 
 ## Phase 5 : fiabilité (semaine 6)
 
