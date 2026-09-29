@@ -9,6 +9,11 @@ describe("requeteSirene", () => {
     expect(url.startsWith("https://api.insee.fr/")).toBe(true);
   });
 
+  it("compte à la date du jour, pas sur tout l'historique", () => {
+    expect(new URL(requeteSirene("10.71C", "2026-09-29")).searchParams.get("date")).toBe("2026-09-29");
+    expect(new URL(requeteSirene("10.71C")).searchParams.get("date")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
   it("refuse un code mal formé (pas d'injection dans la requête)", () => {
     expect(() => requeteSirene("49.32Z) OR (x")).toThrow();
     expect(() => requeteSirene("4932Z")).toThrow();

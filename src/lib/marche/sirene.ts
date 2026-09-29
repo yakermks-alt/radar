@@ -8,11 +8,13 @@ const PAUSE_MS = 2_100; // 30 requêtes/min au maximum
 
 const reponse = z.object({ header: z.object({ total: z.number() }) });
 
-export function requeteSirene(codeNaf: string): string {
+export function requeteSirene(codeNaf: string, jour = new Date().toISOString().slice(0, 10)): string {
   if (!FORMAT_NAF.test(codeNaf)) throw new Error(`Code NAF invalide : ${codeNaf}`);
-  // Unités légales actives dont l'activité principale actuelle est ce code.
+  // Unités légales actives AUJOURD'HUI dont l'activité principale est ce code. Sans « date »,
+  // periode() cherche dans tout l'historique et compte aussi les entreprises actives autrefois
+  // (mesuré le 29/09/2026 : 82 765 boulangeries au lieu de 40 561).
   const q = `periode(activitePrincipaleUniteLegale:${codeNaf} AND etatAdministratifUniteLegale:A)`;
-  return `https://api.insee.fr/api-sirene/3.11/siren?${new URLSearchParams({ q, nombre: "1", champs: "siren" })}`;
+  return `https://api.insee.fr/api-sirene/3.11/siren?${new URLSearchParams({ q, date: jour, nombre: "1", champs: "siren" })}`;
 }
 
 export function creerCompteur(cle: string | undefined) {

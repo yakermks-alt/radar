@@ -1,5 +1,5 @@
 # Chaque nuit (4 h 30 à Paris l'été) : collecte des avis, tri par l'IA, embeddings, regroupement.
-# Secrets du repo : NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, GEMINI_API_KEY.
+# Secrets du repo : NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, GEMINI_API_KEY, INSEE_API_KEY.
 name: Collecte et analyse (chaque nuit)
 
 on:
@@ -22,6 +22,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      INSEE_API_KEY: ${{ secrets.INSEE_API_KEY }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5

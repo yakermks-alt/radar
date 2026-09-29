@@ -71,8 +71,10 @@
 
 - [x] (Claude) Collecte sur les App Stores France, Belgique, Suisse et Canada (même flux officiel) (28/09)
 - [x] (Claude) Taille du marché : l'IA associe chaque opportunité à des codes NAF, nombre d'entreprises actives via l'API Sirene de l'Insee, nouveau critère du score (28/09)
-- [ ] (Toi) Créer la clé de l'API Sirene sur portail-api.insee.fr et la mettre dans `.env.local` (`INSEE_API_KEY`)
-- [ ] (Claude) Ajouter la clé Insee aux secrets GitHub pour la tâche de nuit
+- [x] (Toi) Clé de l'API Sirene créée (29/09)
+- [x] (Claude) Clé Insee dans les secrets GitHub et la tâche de nuit (29/09)
+- [x] (Claude) Comptage corrigé : sans le paramètre `date`, Sirene comptait aussi les entreprises actives par le passé (82 765 boulangeries au lieu de 40 561) (29/09)
+- [ ] (Claude) Avant le 5 janvier 2027 : Sirene ne diffusera plus que les codes NAF 2025 ; adapter la correspondance métier → codes NAF (sinon les comptages tombent à 0)
 - [ ] (Claude) Élargir la liste d'applis (plus de termes de recherche par métier)
 
 **Fin de phase :** chaque opportunité affiche ses besoins, les faiblesses des applis en place et la taille réelle du marché.
