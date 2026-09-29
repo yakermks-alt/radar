@@ -1,0 +1,58 @@
+# Banc de tests de l'agent (phase 5) : enquêtes de référence puis évaluation indépendante.
+# Lancé à la main. Le résultat (taux d'invention) s'affiche dans le résumé de l'exécution.
+# Secrets du repo : NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, GEMINI_API_KEY, INSEE_API_KEY, TAVILY_API_KEY.
+name: Banc de tests de l'agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      taille:
+        description: Nombre d'enquêtes (1 à 20)
+        required: true
+        default: "20"
+        type: string
+      evaluer:
+        description: Réévaluer un passage existant (nom « banc-… »), sans relancer d'enquête
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: banc
+  cancel-in-progress: false
+
+jobs:
+  banc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      INSEE_API_KEY: ${{ secrets.INSEE_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      # Jamais interpolés directement dans une commande : passés par variable, puis vérifiés.
+      TAILLE: ${{ inputs.taille }}
+      EVALUER: ${{ inputs.evaluer }}
+    steps:
+      - name: Vérifier les paramètres
+        run: |
+          [[ "$TAILLE" =~ ^([1-9]|1[0-9]|20)$ ]] || { echo "Taille invalide (1 à 20)"; exit 1; }
+          [[ -z "$EVALUER" || "$EVALUER" =~ ^banc-[0-9-]{16}$ ]] || { echo "Nom de passage invalide"; exit 1; }
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Modèle d'embeddings en cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules/@huggingface/transformers/.cache
+          key: modele-embeddings-paraphrase-multilingual-minilm-l12-v2
+      - name: Banc de tests
+        run: |
+          if [[ -n "$EVALUER" ]]; then npx tsx scripts/banc/banc.mts --evaluer "$EVALUER"
+          else npx tsx scripts/banc/banc.mts --taille "$TAILLE"; fi

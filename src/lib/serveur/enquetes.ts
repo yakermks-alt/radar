@@ -4,6 +4,7 @@ import { openSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Rapport } from "../agent/agent";
+import type { Mesures } from "../agent/mesures";
 import { baseServeur } from "./base";
 
 export const ENQUETES_PAR_JOUR = 10; // quotas gratuits : ~1 000 recherches web/mois, ~500 appels Flash-Lite/jour
@@ -28,6 +29,8 @@ export type Enquete = {
   etapes_faites: number;
   rapport: Rapport | null;
   erreur: string | null;
+  mesures: Partial<Mesures>;
+  reprises: number;
   cree_le: string;
   maj_le: string;
 };
@@ -39,7 +42,7 @@ export async function enqueteParJeton(jeton: string): Promise<{ enquete: Enquete
   const db = baseServeur();
   const { data: enquete, error } = await db
     .from("enquetes")
-    .select("id, jeton, sujet, statut, budget, etapes_faites, rapport, erreur, cree_le, maj_le")
+    .select("id, jeton, sujet, statut, budget, etapes_faites, rapport, erreur, mesures, reprises, cree_le, maj_le")
     .eq("jeton", jeton)
     .maybeSingle<Enquete>();
   if (error) throw new Error(error.message);
@@ -58,6 +61,7 @@ export async function dernieresEnquetes(n = 20): Promise<Pick<Enquete, "jeton" |
   const { data, error } = await baseServeur()
     .from("enquetes")
     .select("jeton, sujet, statut, etapes_faites, budget, cree_le")
+    .is("banc", null) // les enquêtes du banc de tests restent à part
     .order("cree_le", { ascending: false })
     .limit(n);
   if (error) throw new Error(error.message);
@@ -71,6 +75,7 @@ export async function enquetesDuJour(maintenant = new Date()): Promise<number> {
   const { count, error } = await baseServeur()
     .from("enquetes")
     .select("id", { count: "exact", head: true })
+    .is("banc", null)
     .gte("cree_le", `${jour}T00:00:00${decalage}`);
   if (error) throw new Error(error.message);
   return count ?? 0;

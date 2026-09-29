@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { enqueteParJeton, type EtapeAffichee } from "@/lib/serveur/enquetes";
 import type { Rapport } from "@/lib/agent/agent";
+import type { Mesures } from "@/lib/agent/mesures";
 import { LIBELLES_OUTIL, LIBELLES_STATUT, LIBELLES_VERDICT } from "../../enquetes/statuts";
 import { Direct } from "./Direct";
 import { Reprendre } from "./Reprendre";
@@ -46,6 +47,8 @@ async function Contenu({ params }: { params: PageProps<"/enquete/[jeton]">["para
 
       {enquete.rapport && <BlocRapport rapport={enquete.rapport} />}
 
+      {enquete.statut === "terminee" && <Suivi m={enquete.mesures} etapes={etapes.length} reprises={enquete.reprises} />}
+
       <h2 className="mb-4 mt-10 text-lg font-semibold">{enquete.rapport ? "Comment l'agent a enquêté" : "L'agent enquête"}</h2>
       <ol className="flex flex-col gap-4 border-l border-neutral-200 pl-5 dark:border-neutral-800">
         {etapes.map((e) => (
@@ -78,6 +81,21 @@ function Etape({ e }: { e: EtapeAffichee }) {
       {e.pensee && <p className="mt-1 text-sm italic text-neutral-500">{e.pensee}</p>}
     </li>
   );
+}
+
+// Ce que l'enquête a coûté : temps et quotas gratuits consommés (phase 5).
+function Suivi({ m, etapes, reprises }: { m: Partial<Mesures>; etapes: number; reprises: number }) {
+  const appels = Object.values(m.appels_ia ?? {}).reduce((s, n) => s + n, 0);
+  if (!m.duree_s && !appels) return null;
+  const lignes = [
+    m.duree_s ? `${Math.max(1, Math.round(m.duree_s / 60))} min` : null,
+    `${etapes} étapes${m.etapes_ratees ? ` dont ${m.etapes_ratees} ratée${m.etapes_ratees > 1 ? "s" : ""}` : ""}`,
+    `${appels} appels à l'IA`,
+    `${m.recherches ?? 0} recherche${(m.recherches ?? 0) > 1 ? "s" : ""} web${m.recherches_cache ? ` (+ ${m.recherches_cache} en cache)` : ""}`,
+    `${m.pages ?? 0} page${(m.pages ?? 0) > 1 ? "s" : ""} lue${(m.pages ?? 0) > 1 ? "s" : ""}${m.pages_cache ? ` (+ ${m.pages_cache} en cache)` : ""}`,
+    reprises ? `${reprises} reprise${reprises > 1 ? "s" : ""}` : null,
+  ].filter(Boolean);
+  return <p className="mt-8 text-xs text-neutral-500">Suivi : {lignes.join(" · ")}</p>;
 }
 
 const lien = (url: string) => /^https?:\/\//.test(url);

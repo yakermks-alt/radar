@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { verifierAffirmations } from "../../src/lib/agent/citations";
+import { chiffresProuves, nombres, verifierAffirmations } from "../../src/lib/agent/citations";
 
 const sources = new Map([
   ["https://exemple.fr/prix", "L’offre Pro coûte 19 € par mois,\n  sans engagement. L'offre Équipe coûte 49 €."],
@@ -56,5 +56,25 @@ describe("tolérance sur la forme, jamais sur les mots", () => {
   });
   it("refuse un morceau trop court après « … »", () => {
     expect(v("100% gratuit, sans engagement … Pro").rejetees[0].raison).toBe("citation trop courte");
+  });
+});
+
+describe("chiffres prouvés par la citation", () => {
+  it("met les nombres sous une forme comparable", () => {
+    expect([...nombres("40 561 entreprises, 9,00 €/mois, 1,5 %, 1.500 clients, 2026")].sort()).toEqual(["1.5", "1500", "2026", "40561", "9"]);
+    expect([...nombres("40 561")]).toEqual(["40561"]);
+  });
+  it("accepte des chiffres présents dans la citation, quelle que soit leur écriture", () => {
+    expect(chiffresProuves("Il existe 40561 entreprises.", "Au 29/09, 40 561 entreprises actives")).toBe(true);
+    expect(chiffresProuves("L'offre Pro coûte 9 € par mois.", "Pro : 9,00 €/mois HT")).toBe(true);
+  });
+  it("refuse un chiffre absent de la citation", () => {
+    expect(chiffresProuves("Tiime compte 500 000 utilisateurs.", "450 000 entrepreneurs adorent Tiime")).toBe(false);
+    expect(chiffresProuves("L'offre coûte 19 € depuis 2024.", "L'offre coûte 19 € par mois.")).toBe(false);
+  });
+  it("rejette l'affirmation avec la raison « chiffre non prouvé »", () => {
+    const src = new Map([["https://tiime.fr", "450 000 entrepreneurs adorent Tiime et son application."]]);
+    const { rejetees } = verifierAffirmations([{ texte: "Tiime a 500 000 utilisateurs.", source: "https://tiime.fr", citation: "450 000 entrepreneurs adorent Tiime" }], src);
+    expect(rejetees[0].raison).toBe("chiffre non prouvé");
   });
 });

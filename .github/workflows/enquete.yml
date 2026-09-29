@@ -1,20 +1,23 @@
 # Mène une enquête de l'agent, lancée depuis le site (API GitHub, jeton limité à ce dépôt).
+# Chaque heure, sans numéro : reprend les enquêtes interrompues ou oubliées (phase 5).
 # Secrets du repo : NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, GEMINI_API_KEY, INSEE_API_KEY, TAVILY_API_KEY.
 name: Enquête de l'agent
 
 on:
+  schedule:
+    - cron: "17 * * * *"
   workflow_dispatch:
     inputs:
       id:
-        description: Numéro de l'enquête
-        required: true
+        description: Numéro de l'enquête (vide = reprendre les enquêtes interrompues)
+        required: false
         type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: enquete-${{ inputs.id }}
+  group: enquete-${{ inputs.id || 'reprises' }}
   cancel-in-progress: false
 
 jobs:
@@ -31,7 +34,7 @@ jobs:
       ENQUETE_ID: ${{ inputs.id }}
     steps:
       - name: Vérifier le numéro
-        run: '[[ "$ENQUETE_ID" =~ ^[0-9]{1,9}$ ]] || { echo "Numéro invalide"; exit 1; }'
+        run: '[[ -z "$ENQUETE_ID" || "$ENQUETE_ID" =~ ^[0-9]{1,9}$ ]] || { echo "Numéro invalide"; exit 1; }'
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
@@ -44,4 +47,6 @@ jobs:
           path: node_modules/@huggingface/transformers/.cache
           key: modele-embeddings-paraphrase-multilingual-minilm-l12-v2
       - name: Enquêter
-        run: npx tsx scripts/agent/enqueter.mts --reprendre "$ENQUETE_ID"
+        run: |
+          if [[ -n "$ENQUETE_ID" ]]; then npx tsx scripts/agent/enqueter.mts --reprendre "$ENQUETE_ID"
+          else npx tsx scripts/agent/enqueter.mts --file; fi

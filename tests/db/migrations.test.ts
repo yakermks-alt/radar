@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const DIR = join(__dirname, "../../supabase/migrations");
 const MIGRATIONS = readdirSync(DIR).filter((f) => f.endsWith(".sql")).sort();
-const TABLES = ["apps", "avis", "groupes", "groupes_avis", "journal", "enquetes", "etapes", "sources"];
+const TABLES = ["apps", "avis", "groupes", "groupes_avis", "journal", "enquetes", "etapes", "sources", "cache_web"];
 
 // Supabase donne par défaut tous les droits aux rôles publics sur les nouvelles tables :
 // c'est précisément ce que les migrations doivent neutraliser.
@@ -265,5 +265,43 @@ describe("jeton des enquêtes (0005)", () => {
 
   it("reste illisible avec les clés publiques", async () => {
     await expect(en("anon", "select jeton from public.enquetes")).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("fiabilité (0006)", () => {
+  it("compte les recherches web du mois, hors enquêtes plus anciennes", async () => {
+    await db.exec(`
+      insert into public.enquetes (sujet, mesures) values ('mesure a', '{"recherches": 4}'), ('mesure b', '{"recherches": 3, "recherches_cache": 9}');
+      insert into public.enquetes (sujet, mesures, maj_le) values ('mesure vieille', '{"recherches": 50}', now() - interval '40 days');
+    `);
+    const { rows } = await en("service_role", "select public.recherches_du_mois() as n");
+    expect(rows[0]).toEqual({ n: 7 });
+  });
+
+  it("ne reprend automatiquement que les enquêtes oubliées", async () => {
+    await db.exec("update public.enquetes set statut = 'terminee'");
+    const { rows } = await db.query<{ id: number }>(`
+      insert into public.enquetes (sujet, statut) values ('toute neuve', 'en_attente') returning id`);
+    const neuve = rows[0].id;
+    const aucune = await en("service_role", "select id from public.prendre_enquete_oubliee()");
+    expect(aucune.rows).toEqual([]); // lancée à l'instant depuis le site : pas touche
+    const { rows: r2 } = await db.query<{ id: number }>(`
+      insert into public.enquetes (sujet, statut, erreur) values ('interrompue', 'en_cours', 'Gemini trop lent') returning id`);
+    const prise = await en("service_role", "select id from public.prendre_enquete_oubliee()");
+    expect(prise.rows).toEqual([{ id: r2[0].id }]);
+    await db.exec(`update public.enquetes set maj_le = now() - interval '20 minutes' where id = ${neuve}`);
+    const morte = await en("service_role", "select id from public.prendre_enquete_oubliee()");
+    expect(morte.rows).toEqual([{ id: neuve }]); // exécution morte : reprise
+    await expect(en("anon", "select * from public.prendre_enquete_oubliee()")).rejects.toThrow(/permission denied/);
+  });
+
+  it("ferme le cache et le compteur aux clés publiques", async () => {
+    await expect(en("anon", "select * from public.cache_web")).rejects.toThrow(/permission denied/);
+    await expect(en("authenticated", "select public.recherches_du_mois()")).rejects.toThrow(/permission denied/);
+  });
+
+  it("refuse une clé de cache vide ou démesurée", async () => {
+    await expect(db.exec(`insert into public.cache_web (cle, contenu) values ('x', '{}')`)).rejects.toThrow(/check constraint/);
+    await expect(db.exec(`insert into public.cache_web (cle, contenu) values ('page:${"a".repeat(1200)}', '{}')`)).rejects.toThrow(/check constraint/);
   });
 });
