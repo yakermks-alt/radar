@@ -3,7 +3,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { creerEnquete, enqueteParJeton, enquetesDuJour, ENQUETES_PAR_JOUR, lancerAgent, relancerEnquete } from "@/lib/serveur/enquetes";
+import { agentLancable, creerEnquete, enqueteParJeton, enquetesDuJour, ENQUETES_PAR_JOUR, lancerAgent, relancerEnquete } from "@/lib/serveur/enquetes";
 
 export type EtatFormulaire = { message: string | null; sujet: string };
 
@@ -34,6 +34,7 @@ export async function lancerEnquete(_: EtatFormulaire, form: FormData): Promise<
   if (!v.success) return { message: v.error.issues[0].message, sujet: brut };
   const refus = refusAcces(form);
   if (refus) return { message: refus, sujet: brut };
+  if (!agentLancable()) return { message: "Lancement pas encore branché sur ce site (jeton GitHub manquant).", sujet: brut };
 
   if ((await enquetesDuJour()) >= ENQUETES_PAR_JOUR) {
     return { message: `Limite de ${ENQUETES_PAR_JOUR} enquêtes par jour atteinte (offre gratuite des services utilisés). Reviens demain.`, sujet: brut };

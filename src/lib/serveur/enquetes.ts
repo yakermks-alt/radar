@@ -92,6 +92,12 @@ export async function relancerEnquete(id: number): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+// L'agent peut-il être lancé d'ici ? (vérifié avant d'enregistrer une enquête, pour ne pas en
+// laisser une en attente pour toujours ni la compter dans la limite du jour)
+export function agentLancable(): boolean {
+  return Boolean(process.env.GITHUB_DISPATCH_TOKEN) || process.env.NODE_ENV === "development";
+}
+
 // Démarre l'agent sur une enquête. En ligne : tâche GitHub Actions (jeton GitHub limité à ce dépôt).
 // En local (npm run dev) : processus détaché sur la machine, journal dans le dossier temporaire.
 export async function lancerAgent(id: number): Promise<"github" | "local" | "aucun"> {

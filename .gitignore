@@ -43,3 +43,9 @@ next-env.d.ts
 
 # vérification locale
 .verif/
+
+# Local Netlify folder
+.netlify
+
+# Netlify (lien local du site)
+.netlify
