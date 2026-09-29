@@ -93,7 +93,7 @@ describe("rapport", () => {
       ...vide,
       budget: 1,
       sources: [
-        { url: "https://boulange.fr/tarifs", titre: "Tarifs", texte: "Abonnement à 39 € par mois pour une boutique.", suspecte: false },
+        { url: "https://boulange.fr/tarifs", titre: "Tarifs BoulangePro", texte: "Abonnement à 39 € par mois pour une boutique.", suspecte: false },
         { url: "radar://avis/7", titre: "Avis", texte: "La caisse plante tous les samedis matin.", suspecte: false },
       ],
     };
@@ -216,5 +216,24 @@ describe("pairesARelire", () => {
       new Map([["https://annuaire-entreprises.data.gouv.fr/entreprise/1", "ABBY"]]),
     );
     expect(p).toContain("Source : ABBY (https://annuaire-entreprises.data.gouv.fr/entreprise/1)");
+  });
+});
+
+describe("citation utilisée deux fois", () => {
+  it("n'est gardée qu'une fois, dans la première section qui l'utilise", async () => {
+    const etat: Etat = { ...vide, budget: 1, sources: [{ url: "radar://avis/3", titre: "Avis 1/5 sur Caisse X", texte: "La caisse plante tous les samedis matin.", suspecte: false }] };
+    const a = { source: "radar://avis/3", citation: "La caisse plante tous les samedis matin" };
+    const d = deps([], {
+      rediger: vi.fn(async (): Promise<RapportBrut> => ({
+        verdict: "a_creuser",
+        sections: [
+          { titre: "Problème", affirmations: [{ ...a, texte: "Un utilisateur de Caisse X signale des plantages le samedi matin." }] },
+          { titre: "Risques", affirmations: [{ ...a, texte: "Un utilisateur de Caisse X signale des plantages le samedi." }] },
+        ],
+      })),
+    });
+    const { rapport } = await avancer(etat, d);
+    expect(rapport?.sections.find((s) => s.titre === "Problème")?.affirmations).toHaveLength(1);
+    expect(rapport?.sections.find((s) => s.titre === "Risques")?.affirmations).toHaveLength(0);
   });
 });

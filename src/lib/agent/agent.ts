@@ -3,7 +3,7 @@
 // reprendre l'enquête à l'étape suivante. La dernière étape rédige le rapport (Flash), dont
 // chaque affirmation doit citer mot pour mot une source lue, sinon elle est rejetée.
 import { z } from "zod";
-import { verifierAffirmations, type Affirmation, type Rejet } from "./citations";
+import { normaliser, verifierAffirmations, type Affirmation, type Rejet } from "./citations";
 import type { FicheEntreprise, Resultat } from "./outils";
 import { semblePiege, type Page } from "./page";
 import { FORMAT_NAF } from "../marche/sirene";
@@ -87,7 +87,9 @@ Objectif : réunir des preuves sur (1) le problème vécu par les clients, (2) l
 - chercher_avis : argument = description d'un problème ; renvoie de vrais avis négatifs d'applis pro
 - entreprises : argument = nom d'un concurrent ; renvoie sa fiche officielle (création, effectif, chiffre d'affaires).
   Ou argument = un code NAF (format 10.71C) : renvoie le nombre d'entreprises actives de ce métier en France
-  (taille du marché). Un métier peut avoir plusieurs codes : compte les principaux.
+  (taille du marché). Le code NAF est celui des CLIENTS visés (10.71C pour des boulangeries, 96.02A pour des
+  coiffeurs), jamais celui des éditeurs de logiciels. Si les clients sont de tous secteurs (TPE en général,
+  commerciaux), ne cherche pas de code NAF.
 - rediger : argument vide ; quand tu as assez de preuves, ou que le budget touche à sa fin
 Méthode : un résultat de recherche ne donne qu'un extrait ; pour les prix et les fonctionnalités, LIS les pages
 (tarifs des concurrents surtout). Consulte la fiche officielle des principaux concurrents. Varie les angles au
@@ -122,7 +124,13 @@ La citation doit PROUVER l'affirmation, pas seulement parler du même sujet : ch
   « onéreux », « majeur », « de nombreux »…). Reprends les chiffres tels quels.
 - Une page d'éditeur, un comparatif ou un témoignage publié par un éditeur n'est pas un fait établi :
   attribue-le (« Selon Glitz, … », « Wavy annonce … », « D'après un comparatif de <site>, … »).
-- Nomme l'entreprise ou l'appli concernée quand la source la donne (titre ou adresse de la source).
+- Nomme l'entreprise ou l'appli concernée quand la source la donne (titre ou adresse de la source). Tout nom
+  propre de l'affirmation doit figurer dans la citation, le titre ou l'adresse de la source : si le nom est dans
+  un intertitre plus haut, commence la citation par ce nom recopié puis « … » puis le passage (ex. « Cilea … louer
+  le logiciel pour 39€/mois »). Sinon l'affirmation est supprimée.
+- Pertinence : n'utilise que des avis sur des applis du métier étudié (un avis sur une appli d'un autre métier est
+  hors sujet), et pour la taille du marché seulement le code NAF des clients visés. N'utilise jamais deux fois la
+  même citation.
 verdict : « prometteur », « a_creuser » ou « decevant », selon les preuves réunies.`;
 
 function historique(etat: Etat): string {
@@ -343,21 +351,31 @@ export async function redigerRapport(etat: Etat, deps: Dependances): Promise<Rap
   const brut = rapportBrut.parse(await deps.rediger(SYSTEME_REDACTION, promptRedaction(etat)));
   // Vérification sur le texte vu par la rédaction (les pages longues sont coupées).
   const lu = new Map(etat.sources.map((s) => [s.url, couper(s.texte, PAGE_DANS_REDACTION)]));
+  const titres = new Map(etat.sources.map((s) => [s.url, s.titre]));
   const rejetees: Rejet[] = [];
   const sections = SECTIONS.map((titre) => {
     const affirmations = brut.sections.filter((s) => s.titre === titre).flatMap((s) => s.affirmations);
-    const v = verifierAffirmations(affirmations, lu);
+    const v = verifierAffirmations(affirmations, lu, titres);
     rejetees.push(...v.rejetees);
     return { titre, affirmations: v.gardees };
   });
   if (deps.juger) {
     const toutes = sections.flatMap((s) => s.affirmations);
-    const horsSujet = await citationsHorsSujet(toutes, new Map(etat.sources.map((s) => [s.url, s.titre])), deps.juger);
+    const horsSujet = await citationsHorsSujet(toutes, titres, deps.juger);
     for (const s of sections) {
       rejetees.push(...s.affirmations.filter((a) => horsSujet.has(a)).map((a) => ({ ...a, raison: "citation hors sujet" as const })));
       s.affirmations = s.affirmations.filter((a) => !horsSujet.has(a));
     }
   }
+  // Une même citation ne sert qu'une fois (après la relecture, pour garder une affirmation qui la mérite).
+  const dejaCitees = new Set<string>();
+  for (const s of sections)
+    s.affirmations = s.affirmations.filter((a) => {
+      const cle = `${a.source}\u0000${normaliser(a.citation)}`;
+      if (dejaCitees.has(cle)) return false;
+      dejaCitees.add(cle);
+      return true;
+    });
   const citees = new Set(sections.flatMap((s) => s.affirmations.map((a) => a.source)));
   return {
     verdict: brut.verdict,

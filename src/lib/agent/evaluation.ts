@@ -1,7 +1,7 @@
 // Évaluation d'un rapport pour le banc de tests : on relit chaque affirmation GARDÉE, par trois
 // contrôles indépendants de la chaîne de rédaction. Une affirmation fautive à au moins un contrôle
 // est une invention. Taux d'invention = inventions / affirmations gardées.
-import { chiffresProuves, verifierAffirmations, type Affirmation } from "./citations";
+import { chiffresProuves, nomsProuves, verifierAffirmations, type Affirmation } from "./citations";
 import { pairesARelire, type Rapport } from "./agent";
 import type { Evaluation, Faute } from "./mesures";
 
@@ -25,6 +25,7 @@ export function evaluerRapport(
   sources: Map<string, string>, // texte complet enregistré de chaque source
   verdicts: { numero: number; prouve: boolean }[] | null, // null : relecture IA impossible (quotas)
   juge: string | null,
+  titres: Map<string, string | null> = new Map(),
 ): Evaluation {
   const gardees = affirmationsGardees(rapport);
   const fautives = new Set<number>();
@@ -56,6 +57,15 @@ export function evaluerRapport(
     }
   });
 
+  // 2 bis. Noms d'entreprises ou de produits présents dans la citation, le titre ou l'adresse.
+  let noms_non_prouves = 0;
+  gardees.forEach((a, i) => {
+    if (!nomsProuves(a.texte, a.citation, titres.get(a.source) ?? null, a.source)) {
+      noms_non_prouves++;
+      noter(i, "nom non prouvé");
+    }
+  });
+
   // 3. Relecture par un autre modèle, plus exigeant. Réponse manquante = fautive (dans le doute).
   let non_prouvees_juge = 0;
   if (verdicts) {
@@ -72,6 +82,7 @@ export function evaluerRapport(
     gardees: gardees.length,
     citations_absentes,
     chiffres_non_prouves,
+    noms_non_prouves,
     non_prouvees_juge,
     juge: verdicts ? juge : null,
     inventions: fautives.size,
@@ -105,7 +116,7 @@ export function bilan(evaluations: (Evaluation | null)[], total: number): Bilan 
     gardees,
     inventions,
     taux_invention: gardees ? inventions / gardees : null,
-    fautes_mecaniques: ev.reduce((s, e) => s + e.citations_absentes + e.chiffres_non_prouves, 0),
+    fautes_mecaniques: ev.reduce((s, e) => s + e.citations_absentes + e.chiffres_non_prouves + (e.noms_non_prouves ?? 0), 0),
     sections_couvertes_moyenne: ev.length ? ev.reduce((s, e) => s + e.sections_couvertes, 0) / ev.length : null,
   };
 }

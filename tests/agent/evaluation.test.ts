@@ -26,7 +26,7 @@ const bonne2 = { texte: "L'offre Pro d'Abby coûte 9 € HT par mois.", source: 
 describe("evaluerRapport", () => {
   it("ne compte aucune invention dans un rapport propre", () => {
     const e = evaluerRapport(rapport([bonne1, bonne2]), sources, [{ numero: 1, prouve: true }, { numero: 2, prouve: true }], "flash");
-    expect(e).toEqual({ gardees: 2, citations_absentes: 0, chiffres_non_prouves: 0, non_prouvees_juge: 0, juge: "flash", inventions: 0, sections_couvertes: 2, fautes: [] });
+    expect(e).toEqual({ gardees: 2, citations_absentes: 0, chiffres_non_prouves: 0, noms_non_prouves: 0, non_prouvees_juge: 0, juge: "flash", inventions: 0, sections_couvertes: 2, fautes: [] });
   });
 
   it("repère une citation absente de la source enregistrée et un chiffre inventé", () => {

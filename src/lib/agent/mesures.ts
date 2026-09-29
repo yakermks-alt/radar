@@ -16,6 +16,7 @@ export type Evaluation = {
   gardees: number;
   citations_absentes: number; // relecture mécanique : citation introuvable dans la source enregistrée
   chiffres_non_prouves: number;
+  noms_non_prouves?: number; // nom d'entreprise ou de produit absent de la citation, du titre et de l'adresse
   non_prouvees_juge: number; // relecture par un autre modèle
   juge: string | null; // modèle qui a relu (null : relecture IA impossible)
   inventions: number; // affirmations gardées fautives, sans double compte
@@ -23,7 +24,7 @@ export type Evaluation = {
   fautes?: Faute[]; // détail, pour comprendre et corriger
 };
 
-export type Faute = { texte: string; citation: string; source: string; controles: ("citation absente" | "chiffre non prouvé" | "relecteur")[] };
+export type Faute = { texte: string; citation: string; source: string; controles: ("citation absente" | "chiffre non prouvé" | "nom non prouvé" | "relecteur")[] };
 
 export const mesuresVides = (): Mesures => ({
   appels_ia: {},

@@ -67,8 +67,9 @@ async function evaluer(nom: string) {
     const sources: { url: string; titre: string | null; texte: string }[] = await toutLire((a, b) =>
       db.from("sources").select("url, titre, texte").eq("enquete_id", e.id).range(a, b),
     );
-    const { verdicts, juge } = await relire(e.rapport, new Map(sources.map((s) => [s.url, s.titre])));
-    const evaluation = evaluerRapport(e.rapport, new Map(sources.map((s) => [s.url, s.texte])), verdicts, juge);
+    const titres = new Map(sources.map((s) => [s.url, s.titre]));
+    const { verdicts, juge } = await relire(e.rapport, titres);
+    const evaluation = evaluerRapport(e.rapport, new Map(sources.map((s) => [s.url, s.texte])), verdicts, juge, titres);
     await sansErreur(db.from("enquetes").update({ mesures: { ...e.mesures, evaluation } }).eq("id", e.id));
     console.log(`- ${e.sujet} : ${evaluation.inventions}/${evaluation.gardees} fautive(s) (relu par ${juge ?? "personne"})`);
   }
@@ -91,7 +92,7 @@ function resume(nom: string, lignes: Ligne[]): string {
     `**Taux d'invention : ${pct(b.taux_invention)}** (${b.inventions} affirmations fautives sur ${b.gardees} gardées dans les ${b.relues_par_ia} rapports relus ; objectif ≤ ${pct(SEUIL_INVENTION)} : ${verdict}).`,
     "",
     `- Enquêtes : ${b.terminees} terminées et évaluées sur ${b.enquetes} ; ${b.relues_par_ia} relues par un modèle IA ; ${b.fautes_mecaniques} faute(s) mécanique(s) sur l'ensemble (citation absente, chiffre non prouvé)`,
-    `- Détail des fautes : ${somme((e) => e.citations_absentes)} citation(s) absente(s) de la source, ${somme((e) => e.chiffres_non_prouves)} chiffre(s) non prouvé(s), ${somme((e) => e.non_prouvees_juge)} affirmation(s) jugée(s) non prouvée(s) par le relecteur`,
+    `- Détail des fautes : ${somme((e) => e.citations_absentes)} citation(s) absente(s) de la source, ${somme((e) => e.chiffres_non_prouves)} chiffre(s) non prouvé(s), ${somme((e) => e.noms_non_prouves ?? 0)} nom(s) non prouvé(s), ${somme((e) => e.non_prouvees_juge)} affirmation(s) jugée(s) non prouvée(s) par le relecteur`,
     `- Sections remplies : ${b.sections_couvertes_moyenne?.toFixed(1).replace(".", ",") ?? "n.d."} sur 5 en moyenne ; ${(evals.reduce((s, e) => s + (e?.gardees ?? 0), 0) / Math.max(1, b.terminees)).toFixed(1).replace(".", ",")} affirmations par rapport`,
     `- Consommation : ${appels} appels à l'IA, ${recherches} recherches web, ${cache} lectures servies par le cache ; durée médiane ${durees.length ? Math.round(durees.sort((x, y) => x - y)[Math.floor(durees.length / 2)]) : "n.d."} s`,
     "",

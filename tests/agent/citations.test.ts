@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chiffresProuves, nombres, verifierAffirmations } from "../../src/lib/agent/citations";
+import { chiffresProuves, nombres, nomsPropres, nomsProuves, verifierAffirmations } from "../../src/lib/agent/citations";
 
 const sources = new Map([
   ["https://exemple.fr/prix", "L’offre Pro coûte 19 € par mois,\n  sans engagement. L'offre Équipe coûte 49 €."],
@@ -76,5 +76,28 @@ describe("chiffres prouvés par la citation", () => {
     const src = new Map([["https://tiime.fr", "450 000 entrepreneurs adorent Tiime et son application."]]);
     const { rejetees } = verifierAffirmations([{ texte: "Tiime a 500 000 utilisateurs.", source: "https://tiime.fr", citation: "450 000 entrepreneurs adorent Tiime" }], src);
     expect(rejetees[0].raison).toBe("chiffre non prouvé");
+  });
+});
+
+describe("noms prouvés par la citation ou la source", () => {
+  it("repère les noms d'entreprises et de produits, pas les mots courants", () => {
+    expect(nomsPropres("Un utilisateur d'HubSpot signale que l'application plante.")).toEqual(["HubSpot"]);
+    expect(nomsPropres("Selon Combien ça coûte, SumUp propose un logiciel gratuit en France.")).toEqual(["Combien", "SumUp"]);
+    expect(nomsPropres("Le plan Business de Badger Maps coûte 58 dollars HT.")).toEqual(["Business", "Badger", "Maps"]);
+  });
+  it("accepte un nom présent dans la citation, le titre ou l'adresse", () => {
+    expect(nomsProuves("Un utilisateur d'Indy signale un bug.", "ça plante", "Avis 1/5 sur Indy : comptabilité", "radar://avis/1")).toBe(true);
+    expect(nomsProuves("D'après Codeur.com, ONexpense coûte 3,40 €.", "ONexpense est accessible dès 3,40€", "Meilleurs logiciels", "https://www.codeur.com/blog/x")).toBe(true);
+    expect(nomsProuves("VEGA propose une offre à 45 €.", "Vega affiche une offre", null, "https://x.fr")).toBe(true);
+  });
+  it("refuse un nom que rien ne prouve", () => {
+    expect(nomsProuves("SumUp propose un logiciel gratuit.", "Le logiciel est gratuit mais présente des frais", "Combien ça coûte un logiciel de caisse ?", "https://pro.orange.fr/lemag/x")).toBe(false);
+    expect(nomsProuves("Le plan Business coûte 58 $.", "$58/mo Per user", "Pricing - Badger Maps", "https://www.badgermapping.com/pricing")).toBe(false);
+  });
+  it("rejette avec la raison « nom non prouvé » quand les titres sont fournis", () => {
+    const src = new Map([["https://pro.orange.fr/x", "Le logiciel est gratuit mais présente des frais de transaction plus élevés."]]);
+    const a = [{ texte: "SumUp propose un logiciel gratuit.", source: "https://pro.orange.fr/x", citation: "Le logiciel est gratuit mais présente des frais" }];
+    expect(verifierAffirmations(a, src, new Map([["https://pro.orange.fr/x", "Combien ça coûte ?"]])).rejetees[0].raison).toBe("nom non prouvé");
+    expect(verifierAffirmations(a, src).gardees).toHaveLength(1); // sans titres : contrôle sauté
   });
 });
