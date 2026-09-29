@@ -44,12 +44,12 @@ async function lancer(nom: string, taille: number, budget: number) {
 }
 
 // Relecture par le meilleur modèle disponible (autre que celui de la chaîne quand c'est possible).
-async function relire(rapport: Rapport): Promise<{ verdicts: { numero: number; prouve: boolean }[] | null; juge: string | null }> {
+async function relire(rapport: Rapport, titres: Map<string, string | null>): Promise<{ verdicts: { numero: number; prouve: boolean }[] | null; juge: string | null }> {
   const gardees = affirmationsGardees(rapport);
   if (!gardees.length) return { verdicts: [], juge: "aucune affirmation" };
   for (const modele of MODELES_REDACTION) {
     try {
-      const r = await genererJson({ modele, systeme: SYSTEME_EVALUATION, prompt: promptEvaluation(gardees), schema: jugement, delaiMs: 120_000, essais: 2 });
+      const r = await genererJson({ modele, systeme: SYSTEME_EVALUATION, prompt: promptEvaluation(gardees, titres), schema: jugement, delaiMs: 120_000, essais: 2 });
       return { verdicts: r.verdicts, juge: modele };
     } catch (e) {
       if (!(e instanceof QuotaEpuise || e instanceof ModeleIndisponible)) throw e;
@@ -61,8 +61,10 @@ async function relire(rapport: Rapport): Promise<{ verdicts: { numero: number; p
 async function evaluer(nom: string) {
   for (const e of await enquetesDuBanc(nom)) {
     if (e.statut !== "terminee" || !e.rapport) continue;
-    const sources: { url: string; texte: string }[] = await toutLire((a, b) => db.from("sources").select("url, texte").eq("enquete_id", e.id).range(a, b));
-    const { verdicts, juge } = await relire(e.rapport);
+    const sources: { url: string; titre: string | null; texte: string }[] = await toutLire((a, b) =>
+      db.from("sources").select("url, titre, texte").eq("enquete_id", e.id).range(a, b),
+    );
+    const { verdicts, juge } = await relire(e.rapport, new Map(sources.map((s) => [s.url, s.titre])));
     const evaluation = evaluerRapport(e.rapport, new Map(sources.map((s) => [s.url, s.texte])), verdicts, juge);
     await sansErreur(db.from("enquetes").update({ mesures: { ...e.mesures, evaluation } }).eq("id", e.id));
     console.log(`- ${e.sujet} : ${evaluation.inventions}/${evaluation.gardees} fautive(s) (relu par ${juge ?? "personne"})`);
@@ -115,6 +117,10 @@ async function main() {
   const texte = resume(nom, await enquetesDuBanc(nom));
   console.log(`\n${texte}`);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, texte);
+  // L'exécution est rouge si l'objectif n'est pas atteint (pas à cause d'une enquête interrompue :
+  // elle reprendra toute seule).
+  const b = bilan((await enquetesDuBanc(nom)).map((l) => l.mesures.evaluation ?? null), 0);
+  process.exitCode = b.taux_invention !== null && b.taux_invention > SEUIL_INVENTION ? 1 : 0;
   if (aResumer) {
     mkdirSync(join(RACINE, "docs/banc"), { recursive: true });
     writeFileSync(join(RACINE, `docs/banc/${nom}.md`), texte);

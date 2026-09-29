@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { avancer, presqueIdentiques, promptDecision, type Decision, type Dependances, type Etat, type RapportBrut } from "../../src/lib/agent/agent";
+import { avancer, pairesARelire, presqueIdentiques, promptDecision, type Decision, type Dependances, type Etat, type RapportBrut } from "../../src/lib/agent/agent";
 
 const vide: Etat = { sujet: "logiciels pour boulangeries", budget: 10, etapes: [], sources: [] };
 
@@ -206,5 +206,15 @@ describe("presqueIdentiques", () => {
   it("laisse passer un autre angle", () => {
     expect(presqueIdentiques("moovago tarifs", "divalto weavy tarifs")).toBe(false);
     expect(presqueIdentiques("crm mobile commerciaux terrain prix", "avis commerciaux application crm lente")).toBe(false);
+  });
+});
+
+describe("pairesARelire", () => {
+  it("donne au relecteur le titre et l'adresse de la source, comme à un lecteur", () => {
+    const p = pairesARelire(
+      [{ texte: "Abby emploie 12 personnes.", source: "https://annuaire-entreprises.data.gouv.fr/entreprise/1", citation: "Effectif : 12 personnes" }],
+      new Map([["https://annuaire-entreprises.data.gouv.fr/entreprise/1", "ABBY"]]),
+    );
+    expect(p).toContain("Source : ABBY (https://annuaire-entreprises.data.gouv.fr/entreprise/1)");
   });
 });

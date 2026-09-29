@@ -20,7 +20,10 @@ export type Evaluation = {
   juge: string | null; // modèle qui a relu (null : relecture IA impossible)
   inventions: number; // affirmations gardées fautives, sans double compte
   sections_couvertes: number; // sur 5
+  fautes?: Faute[]; // détail, pour comprendre et corriger
 };
+
+export type Faute = { texte: string; citation: string; source: string; controles: ("citation absente" | "chiffre non prouvé" | "relecteur")[] };
 
 export const mesuresVides = (): Mesures => ({
   appels_ia: {},
