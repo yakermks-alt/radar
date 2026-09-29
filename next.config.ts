@@ -31,6 +31,7 @@ const entetes = [
 ];
 
 const nextConfig: NextConfig = {
+  devIndicators: false, // le badge recouvrait le bas de la colonne d'icônes
   async headers() {
     return [{ source: "/(.*)", headers: entetes }];
   },

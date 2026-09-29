@@ -43,7 +43,9 @@ export const rapportBrut = z.object({
     .array(
       z.object({
         titre: z.enum(SECTIONS),
-        affirmations: z.array(z.object({ texte: z.string().max(400), source: z.string().max(1000), citation: z.string().max(400) })).max(8),
+        // Limites larges : une citation un peu longue ne doit pas faire échouer tout le rapport (les
+        // contrôles de preuve, eux, restent stricts).
+        affirmations: z.array(z.object({ texte: z.string().max(800), source: z.string().max(1000), citation: z.string().max(1200) })).max(12),
       }),
     )
     .max(SECTIONS.length),

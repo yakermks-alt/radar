@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Jetons de la charte (source : MASTER.md). Aucune autre couleur, taille ou durée dans le code. */
+@theme {
+  --color-nuit: #0f1b17;
+  --color-nuit-2: #1c2b25;
+  --color-nuit-3: #2a3b34;
+  --color-rail: #b8c6bf;
+  --color-menthe: #3ddc97;
+  --color-vert: #0b7a55;
+  --color-vert-fonce: #085f42;
+  --color-vert-texte: #0b5d41;
+  --color-vert-clair: #e7f5ee;
+  --color-vert-pale: #e3f6ec;
+  --color-sur-vert: #cff2e2;
+  --color-fond: #f3f5f4;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f9f8;
+  --color-texte: #0f1b17;
+  --color-texte-2: #3d4a44;
+  --color-doux: #5b6b64;
+  --color-bordure: #dde5e1;
+  --color-trait: #eef2f0;
+  --color-ambre: #c98a1b;
+  --color-ambre-texte: #8a5d0f;
+  --color-ambre-pale: #fbf1de;
+  --color-rouge: #b42318;
+  --color-rouge-pale: #fdecea;
+  --color-graph-1: #9fe3c4;
+  --color-graph-2: #6fd1a6;
+  --color-graph-3: #2faf7b;
+  --color-graph-4: #0b7a55;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-onest), system-ui, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --radius-petit: 6px;
+  --radius-bouton: 10px;
+  --radius-carte: 14px;
+
+  --shadow-carte: 0 1px 2px rgba(15, 27, 23, 0.06);
+  --shadow-survol: 0 2px 8px rgba(15, 27, 23, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(11, 122, 85, 0.35);
+
+  --ease-radar: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --animate-entree: entree 200ms var(--ease-radar) both;
+  --animate-pouls: pouls 1.6s ease-in-out infinite;
+
+  @keyframes entree {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes pouls {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
   }
 }
 
+html {
+  background: var(--color-fond);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background: var(--color-fond);
+  color: var(--color-texte);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Focus toujours visible au clavier (anneau vert de la charte). */
+:where(a, button, input, textarea, select, summary):focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-bouton);
+}
+
+.chiffres {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Impression et PDF : seul le rapport, sans la navigation. */
+@media print {
+  .sans-impression {
+    display: none !important;
+  }
+  body,
+  html {
+    background: #ffffff;
+  }
 }

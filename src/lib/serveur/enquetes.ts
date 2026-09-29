@@ -37,7 +37,9 @@ export type Enquete = {
 
 const JETON = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-export async function enqueteParJeton(jeton: string): Promise<{ enquete: Enquete; etapes: EtapeAffichee[] } | null> {
+export type SourceAffichee = { url: string; titre: string | null; suspecte: boolean };
+
+export async function enqueteParJeton(jeton: string): Promise<{ enquete: Enquete; etapes: EtapeAffichee[]; sources: SourceAffichee[] } | null> {
   if (!JETON.test(jeton)) return null;
   const db = baseServeur();
   const { data: enquete, error } = await db
@@ -54,18 +56,29 @@ export async function enqueteParJeton(jeton: string): Promise<{ enquete: Enquete
     .order("numero")
     .returns<EtapeAffichee[]>();
   if (e2) throw new Error(e2.message);
-  return { enquete, etapes: etapes ?? [] };
+  const { data: sources, error: e3 } = await db
+    .from("sources")
+    .select("url, titre, suspecte")
+    .eq("enquete_id", enquete.id)
+    .order("id")
+    .returns<SourceAffichee[]>();
+  if (e3) throw new Error(e3.message);
+  return { enquete, etapes: etapes ?? [], sources: sources ?? [] };
 }
 
-export async function dernieresEnquetes(n = 20): Promise<Pick<Enquete, "jeton" | "sujet" | "statut" | "etapes_faites" | "budget" | "cree_le">[]> {
+export type EnqueteListee = Pick<Enquete, "jeton" | "sujet" | "statut" | "etapes_faites" | "budget" | "cree_le" | "erreur"> & {
+  verdict: string | null;
+};
+
+export async function dernieresEnquetes(n = 20): Promise<EnqueteListee[]> {
   const { data, error } = await baseServeur()
     .from("enquetes")
-    .select("jeton, sujet, statut, etapes_faites, budget, cree_le")
+    .select("jeton, sujet, statut, etapes_faites, budget, cree_le, erreur, verdict:rapport->>verdict")
     .is("banc", null) // les enquêtes du banc de tests restent à part
     .order("cree_le", { ascending: false })
     .limit(n);
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []) as EnqueteListee[];
 }
 
 // Enquêtes lancées depuis minuit (heure de Paris), toutes personnes confondues.
