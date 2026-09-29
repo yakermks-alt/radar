@@ -45,6 +45,11 @@ describe("extraireTexte", () => {
     expect(extraireTexte(`<p><span>€</span> <span>5</span><span>,40</span><sup>/mois</sup> HT</p>`).texte).toBe("€ 5,40/mois HT");
   });
 
+  it("garde un espace entre un mot et un chiffre séparés par des balises", () => {
+    expect(extraireTexte(`<p><strong>Prix</strong><span>100</span> à 150 €</p>`).texte).toBe("Prix 100 à 150 €");
+    expect(extraireTexte(`<p><b>12</b><span>mois</span> offerts, <i>Hel</i>lo</p>`).texte).toBe("12 mois offerts, Hello");
+  });
+
   it("garde ce qui n'est pas vraiment invisible", () => {
     const { texte } = extraireTexte(`<div style="overflow:hidden">débordement</div><div class="hidden md:block">bureau</div><p style="opacity:0.8">opaque</p>`);
     expect(texte).toContain("débordement");

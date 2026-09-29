@@ -86,6 +86,12 @@ export async function creerEnquete(sujet: string): Promise<{ id: number; jeton: 
   return data;
 }
 
+// Efface l'erreur d'une enquête interrompue avant de relancer l'agent (la page repasse en direct).
+export async function relancerEnquete(id: number): Promise<void> {
+  const { error } = await baseServeur().from("enquetes").update({ erreur: null, maj_le: new Date().toISOString() }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 // Démarre l'agent sur une enquête. En ligne : tâche GitHub Actions (jeton GitHub limité à ce dépôt).
 // En local (npm run dev) : processus détaché sur la machine, journal dans le dossier temporaire.
 export async function lancerAgent(id: number): Promise<"github" | "local" | "aucun"> {

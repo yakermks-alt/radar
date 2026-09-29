@@ -94,9 +94,12 @@
 - [x] (Claude) Première vraie enquête (facturation mobile des auto-entrepreneurs) : 11 étapes, reprise après une coupure, rapport de 6 affirmations sourcées, 1 rejetée (29/09). Réglages faits en route : rédaction refusée tant que 2 pages n'ont pas été lues (l'agent voulait rédiger sur de simples extraits), bilan de couverture rappelé à chaque tour, repli automatique du modèle de rédaction (Gemini 3.8 Flash et 3.5 Flash saturés ce jour-là, rapport écrit par Flash-Lite)
 - [x] (Claude) Qualité des rapports, sur 3 enquêtes (29/09) : prix découpés en plusieurs balises recollés (« 5 ,40 » → « 5,40 ») ; citations comparées mot à mot en ignorant la ponctuation, coupures « … » acceptées si chaque morceau est exact ; outil « entreprises » qui compte aussi un code NAF (Insee) ; **relecture du sens** par l'IA (une citation qui existe mais ne prouve pas l'affirmation est rejetée) ; recherches presque identiques refusées ; consignes par section. Résultat : enquête 1 = 6 affirmations et pas de prix ; enquête 3 (infirmières libérales) = 9 affirmations dont 4 plaintes, 1 prix, la taille du marché et un risque, 4 rejetées (1 introuvable, 3 hors sujet)
 - Limite connue : Gemini 3.8 Flash et 3.5 Flash saturés toute la journée du 29/09, rapports écrits par Flash-Lite. Le choix du code NAF par l'agent est parfois approximatif (70.22Z « conseil » pour « entreprises avec des commerciaux »)
-- [ ] (Claude) Enquête lancée depuis une page, étapes affichées en direct (Supabase Realtime), exécution par la tâche GitHub
+- [x] (Claude) Pages « Enquêtes » et « enquête en direct » (29/09) : lancement depuis un sujet ou depuis une opportunité du Top 20, code d'accès (obligatoire en ligne), 10 enquêtes par jour au maximum, adresse secrète par enquête (migration 0005), étapes affichées en direct (Supabase Realtime : le signal ne transporte rien, la page relit la base), bouton « Reprendre » après une interruption. Testé de bout en bout dans un navigateur : lancement, 8 étapes en direct, interruption (Gemini trop lent), reprise, rapport affiché sans recharger
+- [x] (Claude) Robustesse : délai par appel Gemini (réponse comprise) puis modèle suivant, règle des recherches en double revue (un nom de concurrent ajouté = nouvelle recherche) (29/09)
+- [x] (Claude) Workflow GitHub `enquete.yml` prêt pour la mise en ligne (numéro vérifié avant usage), clé Tavily dans les secrets (29/09)
+- [ ] (Toi, à la mise en ligne) Jeton GitHub à droits limités (dépôt radar, « Actions : écriture ») et code d'accès, dans les variables Netlify
 
-**Fin de phase :** on tape « logiciels pour boulangeries », on regarde l'agent enquêter, et on obtient un rapport sourcé en quelques minutes.
+**Fin de phase :** on tape « logiciels pour boulangeries », on regarde l'agent enquêter, et on obtient un rapport sourcé en quelques minutes. **Atteint en local le 29/09** (reste la mise en ligne).
 
 ## Phase 5 : fiabilité (semaine 6)
 

@@ -6,6 +6,7 @@ import { enqueteParJeton, type EtapeAffichee } from "@/lib/serveur/enquetes";
 import type { Rapport } from "@/lib/agent/agent";
 import { LIBELLES_OUTIL, LIBELLES_STATUT, LIBELLES_VERDICT } from "../../enquetes/statuts";
 import { Direct } from "./Direct";
+import { Reprendre } from "./Reprendre";
 
 export default function PageEnquete({ params }: PageProps<"/enquete/[jeton]">) {
   return (
@@ -37,9 +38,10 @@ async function Contenu({ params }: { params: PageProps<"/enquete/[jeton]">["para
         {interrompue ? "Interrompue" : LIBELLES_STATUT[enquete.statut]} · étape {Math.min(enquete.etapes_faites, enquete.budget)} sur {enquete.budget} au plus
       </p>
       {interrompue && (
-        <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
-          L&apos;enquête s&apos;est arrêtée : {enquete.erreur}. Elle pourra reprendre là où elle en était.
-        </p>
+        <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          <p>L&apos;enquête s&apos;est arrêtée : {enquete.erreur}. Elle peut reprendre là où elle en était.</p>
+          <Reprendre jeton={enquete.jeton} codeDemande={Boolean(process.env.RADAR_CODE_ACCES)} />
+        </div>
       )}
 
       {enquete.rapport && <BlocRapport rapport={enquete.rapport} />}

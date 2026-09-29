@@ -152,13 +152,21 @@ const urlsLisibles = (etat: Etat) => new Set(etat.sources.filter((s) => /^https?
 
 // Mots d'une requête, sans pluriel ni mots vides : « tarifs abonnement » ≈ « tarif abonnements ».
 const VIDES = new Set(["de", "du", "des", "le", "la", "les", "un", "une", "et", "en", "pour", "avec", "sur", "a", "au", "aux"]);
-const mots = (s: string) => new Set(s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((m) => m && !VIDES.has(m)).map((m) => m.replace(/s$/, "")));
+// Mots qui ne changent pas l'objet d'une recherche : les ajouter ne fait pas une nouvelle recherche.
+const GENERIQUES = new Set([
+  "prix", "tarif", "abonnement", "comparatif", "avi", "logiciel", "application", "appli", "france", "francai", "meilleur",
+  "fonctionnalite", "offre", "cout", "mensuel", "solution", "outil", "plateforme", "crm", "gratuit", "2025", "2026",
+]);
+const mots = (s: string) => new Set(s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").split(/[^\p{L}\p{N}]+/u).filter((m) => m && !VIDES.has(m)).map((m) => m.replace(/s$/, "")));
 
-export function presqueIdentiques(a: string, b: string): boolean {
-  const x = mots(a);
-  const y = mots(b);
-  const communs = [...x].filter((m) => y.has(m)).length;
-  return communs / Math.max(1, new Set([...x, ...y]).size) >= 0.6;
+// Presque identiques : les mots nouveaux sont tous génériques et l'essentiel des mots est commun.
+// Un nom de concurrent ou un autre métier ajouté fait donc une vraie nouvelle recherche.
+export function presqueIdentiques(avant: string, apres: string): boolean {
+  const x = mots(avant);
+  const y = mots(apres);
+  const nouveaux = [...y].filter((m) => !x.has(m));
+  const communs = [...y].filter((m) => x.has(m)).length;
+  return nouveaux.every((m) => GENERIQUES.has(m)) && communs >= Math.ceil(y.size / 2);
 }
 
 function deja(etat: Etat, outil: Outil, argument: string): boolean {

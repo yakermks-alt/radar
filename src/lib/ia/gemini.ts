@@ -17,6 +17,8 @@ type Options<T extends z.ZodType> = {
   prompt: string;
   schema: T;
   cle?: string;
+  delaiMs?: number; // durée maximale d'un appel, réponse comprise (4 min par défaut)
+  essais?: number; // 4 par défaut
 };
 
 export class QuotaEpuise extends Error {}
@@ -43,25 +45,27 @@ export async function genererJson<T extends z.ZodType>(o: Options<T>): Promise<z
     },
   };
 
-  for (let essai = 1; essai <= 4; essai++) {
+  const essais = o.essais ?? 4;
+  for (let essai = 1; essai <= essais; essai++) {
     let res: Response;
+    let brut: string;
     try {
       res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
         method: "POST",
         headers: { "content-type": "application/json", "x-goog-api-key": cle },
         body: JSON.stringify(corps),
-        signal: AbortSignal.timeout(240_000),
+        signal: AbortSignal.timeout(o.delaiMs ?? 240_000),
       });
+      brut = await res.text(); // le délai couvre aussi la lecture de la réponse
     } catch (e) {
-      // Coupure réseau ou Gemini surchargé au-delà de 4 min : on réessaie.
-      if (essai === 4) throw e;
-      await pause(10_000 * essai);
+      // Coupure réseau, ou Gemini surchargé qui répond trop lentement : on réessaie.
+      if (essai === essais) throw new ModeleIndisponible(`Gemini trop lent ou injoignable (${modele}) : ${(e as Error).message}`);
+      await pause(5_000 * essai);
       continue;
     }
     if (res.status === 429) {
-      const texte = await res.text();
       // Quota du jour épuisé : inutile d'insister, l'appelant reprendra au prochain passage.
-      if (/per ?day|PerDay/i.test(texte)) throw new QuotaEpuise(`Quota du jour épuisé pour ${modele}`);
+      if (/per ?day|PerDay/i.test(brut)) throw new QuotaEpuise(`Quota du jour épuisé pour ${modele}`);
       await pause(15_000 * essai); // limite par minute : on attend
       continue;
     }
@@ -69,13 +73,13 @@ export async function genererJson<T extends z.ZodType>(o: Options<T>): Promise<z
       await pause(5_000 * essai);
       continue;
     }
-    if (!res.ok) throw new Error(`Gemini ${res.status} : ${(await res.text()).slice(0, 300)}`);
+    if (!res.ok) throw new Error(`Gemini ${res.status} : ${brut.slice(0, 300)}`);
 
-    const texte = reponse.parse(await res.json()).candidates?.[0]?.content?.parts.map((p) => p.text ?? "").join("");
+    const texte = reponse.parse(JSON.parse(brut)).candidates?.[0]?.content?.parts.map((p) => p.text ?? "").join("");
     if (!texte) throw new Error("Réponse Gemini vide");
     const r = o.schema.safeParse(JSON.parse(texte));
     if (r.success) return r.data;
-    if (essai === 4) throw new Error(`Réponse Gemini hors schéma : ${r.error.message.slice(0, 300)}`);
+    if (essai === essais) throw new Error(`Réponse Gemini hors schéma : ${r.error.message.slice(0, 300)}`);
   }
   throw new ModeleIndisponible(`Gemini indisponible (${modele})`);
 }

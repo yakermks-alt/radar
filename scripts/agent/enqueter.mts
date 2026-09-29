@@ -18,12 +18,13 @@ const arg = (nom: string) => {
 };
 
 const deps: Dependances = {
-  decider: (systeme, prompt) => genererJson({ systeme, prompt, schema: decision }),
+  // Délais courts : une enquête se regarde en direct, mieux vaut réessayer ou changer de modèle qu'attendre.
+  decider: (systeme, prompt) => genererJson({ systeme, prompt, schema: decision, delaiMs: 90_000, essais: 3 }),
   // Le meilleur modèle disponible pour la rédaction : on passe au suivant s'il est saturé ou à court de quota.
   rediger: async (systeme, prompt) => {
     for (const [i, modele] of MODELES_REDACTION.entries()) {
       try {
-        return await genererJson({ modele, systeme, prompt, schema: rapportBrut });
+        return await genererJson({ modele, systeme, prompt, schema: rapportBrut, delaiMs: 120_000, essais: 2 });
       } catch (e) {
         if (!(e instanceof QuotaEpuise || e instanceof ModeleIndisponible) || i === MODELES_REDACTION.length - 1) throw e;
         console.log(`  (${modele} ${e instanceof QuotaEpuise ? "à court de quota" : "saturé"} : rédaction avec ${MODELES_REDACTION[i + 1]})`);
@@ -31,7 +32,7 @@ const deps: Dependances = {
     }
     throw new Error("Aucun modèle de rédaction");
   },
-  juger: (systeme, prompt) => genererJson({ systeme, prompt, schema: jugement }),
+  juger: (systeme, prompt) => genererJson({ systeme, prompt, schema: jugement, delaiMs: 90_000, essais: 3 }),
   rechercher: process.env.TAVILY_API_KEY ? (requete) => rechercherWeb(requete, process.env.TAVILY_API_KEY) : undefined,
   lire: (url) => lirePage(url),
   avis: async (texte) => {

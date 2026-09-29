@@ -200,6 +200,9 @@ describe("presqueIdentiques", () => {
     expect(presqueIdentiques("moovago tarif prix abonnement crm", "moovago tarifs abonnement prix")).toBe(true);
     expect(presqueIdentiques("Freebe tarif abonnement auto-entrepreneur", "Freebe tarifs abonnements fonctionnalités auto-entrepreneur")).toBe(true);
   });
+  it("laisse passer une recherche sur un concurrent précis", () => {
+    expect(presqueIdentiques("logiciel caisse boulangerie prix comparatif", "Cashmag logiciel caisse boulangerie prix")).toBe(false);
+  });
   it("laisse passer un autre angle", () => {
     expect(presqueIdentiques("moovago tarifs", "divalto weavy tarifs")).toBe(false);
     expect(presqueIdentiques("crm mobile commerciaux terrain prix", "avis commerciaux application crm lente")).toBe(false);
