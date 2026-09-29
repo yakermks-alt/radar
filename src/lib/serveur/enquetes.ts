@@ -92,6 +92,13 @@ export async function relancerEnquete(id: number): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+// Retire une enquête que l'agent n'a jamais pu commencer (lancement refusé par GitHub) : elle ne
+// doit ni rester en attente pour toujours ni compter dans la limite du jour.
+export async function annulerEnquete(id: number): Promise<void> {
+  const { error } = await baseServeur().from("enquetes").delete().eq("id", id).eq("etapes_faites", 0);
+  if (error) throw new Error(error.message);
+}
+
 // L'agent peut-il être lancé d'ici ? (vérifié avant d'enregistrer une enquête, pour ne pas en
 // laisser une en attente pour toujours ni la compter dans la limite du jour)
 export function agentLancable(): boolean {

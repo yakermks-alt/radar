@@ -3,7 +3,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { agentLancable, creerEnquete, enqueteParJeton, enquetesDuJour, ENQUETES_PAR_JOUR, lancerAgent, relancerEnquete } from "@/lib/serveur/enquetes";
+import { agentLancable, annulerEnquete, creerEnquete, enqueteParJeton, enquetesDuJour, ENQUETES_PAR_JOUR, lancerAgent, relancerEnquete } from "@/lib/serveur/enquetes";
 
 export type EtatFormulaire = { message: string | null; sujet: string };
 
@@ -41,8 +41,17 @@ export async function lancerEnquete(_: EtatFormulaire, form: FormData): Promise<
   }
 
   const { id, jeton } = await creerEnquete(v.data);
-  const mode = await lancerAgent(id);
-  if (mode === "aucun") return { message: "Enquête enregistrée, mais aucun moyen de lancer l'agent ici.", sujet: brut };
+  let mode: Awaited<ReturnType<typeof lancerAgent>>;
+  try {
+    mode = await lancerAgent(id);
+  } catch (e) {
+    console.error("Lancement de l'agent refusé :", e instanceof Error ? e.message : e);
+    mode = "aucun";
+  }
+  if (mode === "aucun") {
+    await annulerEnquete(id);
+    return { message: "L'agent n'a pas pu être lancé. Réessaie dans quelques minutes.", sujet: brut };
+  }
   redirect(`/enquete/${jeton}`);
 }
 
@@ -56,7 +65,7 @@ export async function reprendreEnquete(jeton: string, _: { message: string | nul
   if (enquete.statut !== "en_cours" && enquete.statut !== "en_attente") return { message: "Cette enquête n'est plus en cours." };
   if (enquete.erreur === null) return { message: "L'enquête tourne déjà." };
   await relancerEnquete(enquete.id);
-  const mode = await lancerAgent(enquete.id);
-  if (mode === "aucun") return { message: "Aucun moyen de lancer l'agent ici." };
+  const mode = await lancerAgent(enquete.id).catch(() => "aucun" as const);
+  if (mode === "aucun") return { message: "L'agent n'a pas pu être relancé. Réessaie dans quelques minutes." };
   redirect(`/enquete/${jeton}`);
 }
