@@ -133,7 +133,7 @@
 
 **But :** que ce soit beau et solide.
 
-- [ ] (Toi + Claude) Design : 4 à 5 directions visuelles concrètes, choix, puis validation écran par écran
+- [x] (Toi + Claude) Design (30/09 nuit) : 3 séries de directions refusées (trop sobre, puis « trop IA »), puis retenu un vrai logiciel pro : couleurs de V2 (vert nuit et vert), navigation de V4 (colonne d'icônes + liste des enquêtes), police Onest, en-tête = barre blanche + carte de titre à onglets. Charte dans `MASTER.md`, planche « Radar : directions visuelles ». Appliqué à tout le site et mis en ligne : rapport à onglets, carte Fiabilité, prix marqués HT/TTC et prix annuels ramenés au mois, Top 20 filtrable, nouvelle enquête avec idées du Top 20, enquête en direct, états vides, version téléphone
 - [ ] (Claude) Page d'accueil, page tarifs, première connexion guidée
 - [ ] (Claude) Audit de sécurité complet (accès à la base, API, injection dans l'agent, secrets) + attaque en direct
 - [ ] (Claude) Performances et affichage sur mobile
