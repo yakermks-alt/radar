@@ -30,7 +30,7 @@ function trouve(texte: string, parts: string[]): boolean {
 export const CITATION_MIN = 12; // en dessous, une citation ne prouve rien (« le prix »)
 
 export type Affirmation = { texte: string; source: string; citation: string };
-export type Rejet = Affirmation & { raison: "source inconnue" | "citation introuvable" | "citation trop courte" };
+export type Rejet = Affirmation & { raison: "source inconnue" | "citation introuvable" | "citation trop courte" | "citation hors sujet" };
 
 export function verifierAffirmations(
   affirmations: Affirmation[],

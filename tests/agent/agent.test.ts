@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { avancer, promptDecision, type Decision, type Dependances, type Etat, type RapportBrut } from "../../src/lib/agent/agent";
+import { avancer, presqueIdentiques, promptDecision, type Decision, type Dependances, type Etat, type RapportBrut } from "../../src/lib/agent/agent";
 
 const vide: Etat = { sujet: "logiciels pour boulangeries", budget: 10, etapes: [], sources: [] };
 
@@ -164,5 +164,44 @@ describe("taille du marché", () => {
     await avancer(vide, d);
     expect(d.compterNaf).not.toHaveBeenCalled();
     expect(d.entreprises).toHaveBeenCalledWith("BoulangePro");
+  });
+});
+
+describe("citation hors sujet", () => {
+  const etat: Etat = {
+    ...vide,
+    budget: 1,
+    sources: [{ url: "radar://avis/9", titre: "Avis", texte: "J'aimerais pouvoir partager un contact vers HubSpot depuis l'iPhone.", suspecte: false }],
+  };
+  const redaction = vi.fn(async (): Promise<RapportBrut> => ({
+    verdict: "a_creuser",
+    sections: [{ titre: "Problème", affirmations: [
+      { texte: "On ne peut pas appeler depuis l'appli.", source: "radar://avis/9", citation: "partager un contact vers HubSpot depuis l'iPhone" },
+      { texte: "Les clients veulent envoyer leurs contacts vers HubSpot.", source: "radar://avis/9", citation: "partager un contact vers HubSpot depuis l'iPhone" },
+    ] }],
+  }));
+
+  it("retire une affirmation dont la citation existe mais ne prouve rien", async () => {
+    const juger = vi.fn(async () => ({ verdicts: [{ numero: 1, prouve: false }, { numero: 2, prouve: true }] }));
+    const { rapport } = await avancer(etat, deps([], { rediger: redaction, juger }));
+    expect(rapport?.sections[0].affirmations.map((a) => a.texte)).toEqual(["Les clients veulent envoyer leurs contacts vers HubSpot."]);
+    expect(rapport?.rejetees).toMatchObject([{ raison: "citation hors sujet", texte: "On ne peut pas appeler depuis l'appli." }]);
+  });
+
+  it("retire aussi une affirmation que le relecteur a oubliée", async () => {
+    const juger = vi.fn(async () => ({ verdicts: [{ numero: 2, prouve: true }] }));
+    const { rapport } = await avancer(etat, deps([], { rediger: redaction, juger }));
+    expect(rapport?.sections[0].affirmations).toHaveLength(1);
+  });
+});
+
+describe("presqueIdentiques", () => {
+  it("repère une recherche reformulée à la marge", () => {
+    expect(presqueIdentiques("moovago tarif prix abonnement crm", "moovago tarifs abonnement prix")).toBe(true);
+    expect(presqueIdentiques("Freebe tarif abonnement auto-entrepreneur", "Freebe tarifs abonnements fonctionnalités auto-entrepreneur")).toBe(true);
+  });
+  it("laisse passer un autre angle", () => {
+    expect(presqueIdentiques("moovago tarifs", "divalto weavy tarifs")).toBe(false);
+    expect(presqueIdentiques("crm mobile commerciaux terrain prix", "avis commerciaux application crm lente")).toBe(false);
   });
 });

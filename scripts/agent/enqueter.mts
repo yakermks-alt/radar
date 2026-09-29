@@ -3,7 +3,7 @@
 // Nouvelle enquête : npx tsx --env-file=.env.local scripts/agent/enqueter.mts "logiciels pour boulangeries" [--budget 15]
 // Reprendre       : npx tsx --env-file=.env.local scripts/agent/enqueter.mts --reprendre 12
 // File d'attente  : npx tsx --env-file=.env.local scripts/agent/enqueter.mts --file  (toutes les enquêtes en attente)
-import { avancer, decision, rapportBrut, type AvisProche, type Dependances, type Etat } from "../../src/lib/agent/agent";
+import { avancer, decision, jugement, rapportBrut, type AvisProche, type Dependances, type Etat } from "../../src/lib/agent/agent";
 import { chercherEntreprises, rechercherWeb } from "../../src/lib/agent/outils";
 import { lirePage } from "../../src/lib/agent/page";
 import { vectoriser, versPgvector } from "../../src/lib/analyse/embeddings";
@@ -30,6 +30,7 @@ const deps: Dependances = {
     }
     throw new Error("Aucun modèle de rédaction");
   },
+  juger: (systeme, prompt) => genererJson({ systeme, prompt, schema: jugement }),
   rechercher: process.env.TAVILY_API_KEY ? (requete) => rechercherWeb(requete, process.env.TAVILY_API_KEY) : undefined,
   lire: (url) => lirePage(url),
   avis: async (texte) => {
