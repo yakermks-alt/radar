@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { topOpportunites, type Opportunite } from "@/lib/serveur/base";
@@ -22,6 +23,9 @@ export default function Accueil() {
           Besoins non couverts, tirés des avis de professionnels français sur leurs logiciels, regroupés par sens et
           classés par potentiel.
         </p>
+        <Link href="/enquetes" className="mt-4 inline-block text-sm font-medium underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900 dark:hover:decoration-neutral-100">
+          Enquêtes de l&apos;agent →
+        </Link>
       </header>
       <Suspense fallback={<p className="text-neutral-500">Chargement…</p>}>
         <Liste />
@@ -89,6 +93,13 @@ function Carte({ o, rang }: { o: Opportunite; rang: number }) {
               )}
             </div>
           )}
+
+          <Link
+            href={`/enquetes?${new URLSearchParams({ sujet: o.nom })}`}
+            className="mt-4 inline-block text-sm font-medium underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900 dark:hover:decoration-neutral-100"
+          >
+            Lancer une enquête sur cette opportunité →
+          </Link>
 
           <ul className="mt-4 flex flex-col gap-3">
             {o.citations.map((c, k) => (

@@ -252,3 +252,18 @@ describe("enquêtes de l'agent (0004)", () => {
     expect((rows[0] as { similarite: number }).similarite).toBeCloseTo(1, 3);
   });
 });
+
+describe("jeton des enquêtes (0005)", () => {
+  it("donne un jeton aléatoire et unique à chaque enquête", async () => {
+    const { rows } = await db.query<{ jeton: string }>(
+      "insert into public.enquetes (sujet) values ('sujet a'), ('sujet b') returning jeton",
+    );
+    expect(rows[0].jeton).toMatch(/^[0-9a-f-]{36}$/);
+    expect(rows[0].jeton).not.toBe(rows[1].jeton);
+    await expect(db.exec(`update public.enquetes set jeton = '${rows[0].jeton}' where jeton = '${rows[1].jeton}'`)).rejects.toThrow(/duplicate key/);
+  });
+
+  it("reste illisible avec les clés publiques", async () => {
+    await expect(en("anon", "select jeton from public.enquetes")).rejects.toThrow(/permission denied/);
+  });
+});

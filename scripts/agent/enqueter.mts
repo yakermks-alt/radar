@@ -3,6 +3,7 @@
 // Nouvelle enquête : npx tsx --env-file=.env.local scripts/agent/enqueter.mts "logiciels pour boulangeries" [--budget 15]
 // Reprendre       : npx tsx --env-file=.env.local scripts/agent/enqueter.mts --reprendre 12
 // File d'attente  : npx tsx --env-file=.env.local scripts/agent/enqueter.mts --file  (toutes les enquêtes en attente)
+import { annoncer } from "../../src/lib/agent/annonce";
 import { avancer, decision, jugement, rapportBrut, type AvisProche, type Dependances, type Etat } from "../../src/lib/agent/agent";
 import { chercherEntreprises, rechercherWeb } from "../../src/lib/agent/outils";
 import { lirePage } from "../../src/lib/agent/page";
@@ -43,15 +44,15 @@ const deps: Dependances = {
   compterNaf: process.env.INSEE_API_KEY ? creerCompteur(process.env.INSEE_API_KEY) : undefined,
 };
 
-async function charger(id: number): Promise<Etat> {
-  const e: { sujet: string; budget: number } = await verifier(db.from("enquetes").select("sujet, budget").eq("id", id).single());
+async function charger(id: number): Promise<Etat & { jeton: string }> {
+  const e: { sujet: string; budget: number; jeton: string } = await verifier(db.from("enquetes").select("sujet, budget, jeton").eq("id", id).single());
   const etapes: Etat["etapes"] = await verifier(
     db.from("etapes").select("numero, pensee, outil, argument, statut, resultat, observation").eq("enquete_id", id).order("numero"),
   );
   const sources: Etat["sources"] = await toutLire((a, b) =>
     db.from("sources").select("url, titre, texte, suspecte").eq("enquete_id", id).order("id").range(a, b),
   );
-  return { sujet: e.sujet, budget: e.budget, etapes, sources };
+  return { sujet: e.sujet, budget: e.budget, jeton: e.jeton, etapes, sources };
 }
 
 const liberer = (id: number) => sansErreur(db.from("enquetes").update({ verrou_jusqu_a: null }).eq("id", id));
@@ -68,18 +69,21 @@ async function mener(id: number): Promise<void> {
       const msg = e instanceof Error ? e.message : String(e);
       await sansErreur(db.from("enquetes").update({ erreur: msg.slice(0, 500), maj_le: new Date().toISOString() }).eq("id", id));
       await liberer(id);
+      await annoncer(etat.jeton, "arret");
       console.log(e instanceof QuotaEpuise ? `Arrêt : ${msg}. Reprise possible demain (--reprendre ${id}).` : `Arrêt sur erreur : ${msg}`);
       process.exitCode = 1;
       return;
     }
     const { etape, sources, rapport } = a;
     await sansErreur(db.rpc("enregistrer_etape", { enquete: id, etape, sources }));
+    if (!rapport) await annoncer(etat.jeton, "etape");
     console.log(`${String(etape.numero).padStart(2)}. ${etape.outil}${etape.argument ? `(${etape.argument})` : ""} → ${etape.statut === "ok" ? "" : "ÉCHEC : "}${etape.resultat}`);
     if (etape.pensee) console.log(`    ${etape.pensee}`);
     if (rapport) {
       await sansErreur(
         db.from("enquetes").update({ statut: "terminee", rapport, erreur: null, verrou_jusqu_a: null, maj_le: new Date().toISOString() }).eq("id", id),
       );
+      await annoncer(etat.jeton, "fin");
       afficher(rapport);
       return;
     }
