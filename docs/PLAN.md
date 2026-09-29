@@ -88,9 +88,9 @@
 - [x] (Claude) Rapport structuré en 5 sections (problème, concurrents et prix, taille du marché, angle d'attaque, risques) : chaque affirmation doit citer mot pour mot une source lue, sinon elle est rejetée et listée (29/09)
 - [x] (Claude) État en base après chaque étape (migration 0004 : `enquetes`, `etapes`, `sources`), verrou par enquête, reprise après coupure, file d'attente (`--file`) (29/09)
 - [x] (Claude) Protection contre les pages piégées : texte caché retiré, instructions pour IA repérées (page marquée suspecte), zones « données non fiables » impossibles à refermer depuis la page, seules les URL trouvées par la recherche sont lisibles, adresses internes refusées (29/09)
-- [ ] (Toi) Coller la migration `0004_enquetes.sql` dans Supabase (SQL Editor)
-- [ ] (Toi) Créer un compte gratuit sur tavily.com et mettre la clé dans `.env.local` : `TAVILY_API_KEY=...`
-- [ ] (Claude) Première vraie enquête, réglage des consignes de l'agent d'après le résultat
+- [x] (Toi) Migration `0004_enquetes.sql` collée, clé Tavily en place (29/09)
+- [x] (Claude) Première vraie enquête (facturation mobile des auto-entrepreneurs) : 11 étapes, reprise après une coupure, rapport de 6 affirmations sourcées, 1 rejetée (29/09). Réglages faits en route : rédaction refusée tant que 2 pages n'ont pas été lues (l'agent voulait rédiger sur de simples extraits), bilan de couverture rappelé à chaque tour, repli automatique du modèle de rédaction (Gemini 3.8 Flash et 3.5 Flash saturés ce jour-là, rapport écrit par Flash-Lite)
+- [ ] (Claude) Qualité du rapport : prix des concurrents pourtant lus mais absents du rapport ; à revoir sur 3-4 enquêtes avec Flash disponible
 - [ ] (Claude) Enquête lancée depuis une page, étapes affichées en direct (Supabase Realtime), exécution par la tâche GitHub
 
 **Fin de phase :** on tape « logiciels pour boulangeries », on regarde l'agent enquêter, et on obtient un rapport sourcé en quelques minutes.

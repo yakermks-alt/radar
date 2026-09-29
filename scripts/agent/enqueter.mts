@@ -7,7 +7,7 @@ import { avancer, decision, rapportBrut, type AvisProche, type Dependances, type
 import { chercherEntreprises, rechercherWeb } from "../../src/lib/agent/outils";
 import { lirePage } from "../../src/lib/agent/page";
 import { vectoriser, versPgvector } from "../../src/lib/analyse/embeddings";
-import { genererJson, MODELES, QuotaEpuise } from "../../src/lib/ia/gemini";
+import { genererJson, MODELES_REDACTION, ModeleIndisponible, QuotaEpuise } from "../../src/lib/ia/gemini";
 import { db, sansErreur, toutLire, verifier } from "../lib/base";
 
 const arg = (nom: string) => {
@@ -17,15 +17,17 @@ const arg = (nom: string) => {
 
 const deps: Dependances = {
   decider: (systeme, prompt) => genererJson({ systeme, prompt, schema: decision }),
-  // Flash pour la rédaction (~20/jour) ; Flash-Lite si son quota du jour est épuisé.
+  // Le meilleur modèle disponible pour la rédaction : on passe au suivant s'il est saturé ou à court de quota.
   rediger: async (systeme, prompt) => {
-    try {
-      return await genererJson({ modele: MODELES.redaction, systeme, prompt, schema: rapportBrut });
-    } catch (e) {
-      if (!(e instanceof QuotaEpuise)) throw e;
-      console.log("  (quota Flash épuisé : rédaction avec Flash-Lite)");
-      return genererJson({ systeme, prompt, schema: rapportBrut });
+    for (const [i, modele] of MODELES_REDACTION.entries()) {
+      try {
+        return await genererJson({ modele, systeme, prompt, schema: rapportBrut });
+      } catch (e) {
+        if (!(e instanceof QuotaEpuise || e instanceof ModeleIndisponible) || i === MODELES_REDACTION.length - 1) throw e;
+        console.log(`  (${modele} ${e instanceof QuotaEpuise ? "à court de quota" : "saturé"} : rédaction avec ${MODELES_REDACTION[i + 1]})`);
+      }
     }
+    throw new Error("Aucun modèle de rédaction");
   },
   rechercher: process.env.TAVILY_API_KEY ? (requete) => rechercherWeb(requete, process.env.TAVILY_API_KEY) : undefined,
   lire: (url) => lirePage(url),

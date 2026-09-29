@@ -130,3 +130,23 @@ describe("promptDecision", () => {
     expect(p.length).toBeLessThan(2 * 400 + 3 * 2000 + 1000);
   });
 });
+
+describe("rédaction trop tôt", () => {
+  it("est refusée tant qu'aucune page n'a été lue et qu'il reste de la marge", async () => {
+    const d = deps([{ pensee: "J'ai assez", outil: "rediger", argument: "" }]);
+    const a = await avancer(vide, d);
+    expect(a.etape).toMatchObject({ outil: "rediger", statut: "erreur" });
+    expect(a.rapport).toBeUndefined();
+    expect(d.rediger).not.toHaveBeenCalled();
+  });
+
+  it("est acceptée sans recherche web (aucune page ne peut être lue)", async () => {
+    const d = deps([{ pensee: "", outil: "rediger", argument: "" }], { rechercher: undefined });
+    expect((await avancer(vide, d)).rapport).toBeDefined();
+  });
+
+  it("rappelle à l'IA ce qui est déjà couvert", () => {
+    const etat: Etat = { ...vide, etapes: [{ numero: 1, pensee: null, outil: "lire_page", argument: "u", statut: "ok", resultat: "", observation: "" }] };
+    expect(promptDecision(etat)).toContain("0 recherche(s) web, 1 page(s) lue(s)");
+  });
+});

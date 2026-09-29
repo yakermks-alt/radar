@@ -8,6 +8,9 @@ export const MODELES = {
   redaction: "gemini-3.8-flash", // rédaction finale uniquement (~20 requêtes/jour)
 } as const;
 
+// Modèles essayés dans l'ordre pour la rédaction : le plus récent est parfois saturé (503).
+export const MODELES_REDACTION = [MODELES.redaction, "gemini-3.5-flash", MODELES.leger] as const;
+
 type Options<T extends z.ZodType> = {
   modele?: string;
   systeme: string;
@@ -17,6 +20,7 @@ type Options<T extends z.ZodType> = {
 };
 
 export class QuotaEpuise extends Error {}
+export class ModeleIndisponible extends Error {} // saturé ou en panne malgré les nouvelles tentatives
 
 const reponse = z.object({
   candidates: z
@@ -73,5 +77,5 @@ export async function genererJson<T extends z.ZodType>(o: Options<T>): Promise<z
     if (r.success) return r.data;
     if (essai === 4) throw new Error(`Réponse Gemini hors schéma : ${r.error.message.slice(0, 300)}`);
   }
-  throw new Error(`Gemini indisponible (${modele})`);
+  throw new ModeleIndisponible(`Gemini indisponible (${modele})`);
 }
