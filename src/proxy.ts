@@ -3,8 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Rafraîchit la session Supabase à chaque requête et renvoie vers /connexion si personne n'est
 // connecté. Pages ouvertes : connexion et retour de Google/GitHub, rapports d'enquête (adresse
-// secrète, partageable), webhook Stripe (signé), invitations (qui renvoient elles-mêmes à la connexion).
-const OUVERTES = ["/connexion", "/auth", "/enquete", "/api/stripe", "/rejoindre"];
+// secrète, partageable), webhook Stripe (signé), invitations (qui renvoient elles-mêmes à la connexion),
+// politique de confidentialité.
+const OUVERTES = ["/connexion", "/auth", "/enquete", "/api/stripe", "/rejoindre", "/confidentialite"];
 
 export async function proxy(requete: NextRequest) {
   let reponse = NextResponse.next({ request: requete });

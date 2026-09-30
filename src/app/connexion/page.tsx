@@ -53,7 +53,10 @@ export default async function Connexion({ searchParams }: PageProps<"/connexion"
           </a>
         </div>
         <p className="text-xs leading-relaxed text-doux">
-          Radar ne reçoit ni ton mot de passe ni tes contacts : seulement ton nom et ton adresse email. Paiements en mode test uniquement, aucune carte réelle n&apos;est débitée.
+          Radar ne reçoit ni ton mot de passe ni tes contacts : seulement ton nom et ton adresse email. Paiements en mode test uniquement, aucune carte réelle n&apos;est débitée.{" "}
+          <a href="/confidentialite" className="font-semibold no-underline">
+            Confidentialité
+          </a>
         </p>
       </div>
     </main>
