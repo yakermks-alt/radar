@@ -35,12 +35,13 @@ export function numeroDuJour(date: Date): number {
 }
 
 // Offre gratuite : « 3 opportunités par jour » qui tournent dans le classement, un nouveau lot chaque
-// jour (le même pour tout le monde ce jour-là, sur la page comme dans l'email du matin).
+// jour (le même pour tout le monde ce jour-là, sur la page comme dans l'email du matin). Le dernier lot
+// se complète avec le haut du classement : toujours n opportunités (30/09 : lot de 2 sur 20).
 export function selectionDuJour<T>(classement: T[], date: Date, n: number = OFFRES.gratuit.opportunites): T[] {
   if (classement.length <= n) return classement;
   const lots = Math.ceil(classement.length / n);
   const debut = (numeroDuJour(date) % lots) * n;
-  return classement.slice(debut, debut + n);
+  return Array.from({ length: n }, (_, k) => classement[(debut + k) % classement.length]);
 }
 
 // Statut d'un abonnement Stripe → offre de l'équipe (past_due : Stripe réessaie encore le paiement).

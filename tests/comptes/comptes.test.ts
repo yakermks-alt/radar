@@ -49,8 +49,8 @@ describe("offre gratuite : 3 opportunités par jour", () => {
     const vus = new Set<number>();
     for (let j = 0; j < 7; j++) {
       const lot = selectionDuJour(classement, new Date(Date.UTC(2026, 9, 1 + j, 10)));
-      expect(lot.length).toBeGreaterThan(0);
-      expect(lot.length).toBeLessThanOrEqual(OFFRES.gratuit.opportunites);
+      expect(lot).toHaveLength(OFFRES.gratuit.opportunites); // toujours 3, même le dernier lot
+      expect(new Set(lot).size).toBe(lot.length);
       for (const x of lot) vus.add(x);
     }
     expect(vus.size).toBe(20);
