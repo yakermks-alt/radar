@@ -42,6 +42,8 @@ const nommage = z.object({
       secteur: texteCoupe(40),
       faisabilite: z.number().min(0).max(10),
       codes_naf: z.array(z.string()).overwrite((c) => c.slice(0, 3)).max(3),
+      clientele: z.enum(["pro", "particuliers", "mixte"]),
+      generique: z.boolean(),
     }),
   ),
 });
@@ -58,7 +60,12 @@ Pour chaque groupe, renvoie :
   plateforme dominante), d'un agrément réglementaire, ou s'il s'agit d'un bug que seul l'éditeur peut corriger.
   Si le groupe mêle une partie faisable et une partie hors de portée, note la partie faisable et formule le nom sur elle.
 - codes_naf : 1 à 3 codes NAF rév. 2 (format "49.32Z") des entreprises qui exercent ce métier et seraient les clientes.
-  Liste vide si le métier n'est pas une activité d'entreprise identifiable (ex. "salariés", "professionnels" en général).`;
+  Liste vide si le métier n'est pas une activité d'entreprise identifiable (ex. "salariés", "professionnels" en général).
+- clientele : "pro" si ceux qui souffrent sont des professionnels dans leur travail et paieraient une solution ;
+  "particuliers" si ce sont des particuliers (élèves du code, parents, voyageurs, camping-caristes, clients d'un commerce),
+  même si l'appli est vendue à des pros ; "mixte" si les deux à parts égales.
+- generique : true si la plainte vaut pour presque n'importe quel logiciel, sans rien de propre à un métier
+  (ergonomie, mode sombre, mode paysage ou tablette, export PDF, lenteur, connexion, mises à jour) ; false sinon.`;
 
 await avecJournal(
   "regroupement",
@@ -183,6 +190,11 @@ await avecJournal(
     const aEnregistrer = groupes.flatMap((g, i) => {
       const n = noms.get(i);
       if (!n) return []; // groupe oublié par l'IA : il reviendra au prochain calcul
+      // Hors classement (30/09) : besoins de particuliers et plaintes valables pour tout logiciel.
+      if (n.clientele === "particuliers" || n.generique) {
+        bilan.ecartes++;
+        return [];
+      }
       const marche = marches.get(i) ?? null;
       const { score, detail } = scorer({ ...g.indicateurs, faisabilite: n.faisabilite, marche: noteMarche(marche?.total ?? null) });
       return [
@@ -209,5 +221,5 @@ await avecJournal(
     }
     return "ok";
   },
-  { avis: 0, groupes: 0, avisGroupes: 0, enregistres: 0, calcul: 0, marchesConnus: 0 },
+  { avis: 0, groupes: 0, avisGroupes: 0, enregistres: 0, calcul: 0, marchesConnus: 0, ecartes: 0 },
 );
