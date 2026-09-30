@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chiffresProuves, nombres, nomsPropres, nomsProuves, verifierAffirmations } from "../../src/lib/agent/citations";
+import { chiffresProuves, comptageSirene, nombres, nomsPropres, nomsProuves, verifierAffirmations, type Affirmation } from "../../src/lib/agent/citations";
 
 const sources = new Map([
   ["https://exemple.fr/prix", "L’offre Pro coûte 19 € par mois,\n  sans engagement. L'offre Équipe coûte 49 €."],
@@ -99,5 +99,26 @@ describe("noms prouvés par la citation ou la source", () => {
     const a = [{ texte: "SumUp propose un logiciel gratuit.", source: "https://pro.orange.fr/x", citation: "Le logiciel est gratuit mais présente des frais" }];
     expect(verifierAffirmations(a, src, new Map([["https://pro.orange.fr/x", "Combien ça coûte ?"]])).rejetees[0].raison).toBe("nom non prouvé");
     expect(verifierAffirmations(a, src).gardees).toHaveLength(1); // sans titres : contrôle sauté
+  });
+});
+
+describe("comptageSirene (chiffre de l'Insee calculé par Radar)", () => {
+  const citation = "Au 2026-09-30, 164 061 entreprises actives en France ont pour activité principale le code NAF 43.99C (répertoire Sirene de l'Insee).";
+  const source = "https://www.insee.fr/fr/metadonnees/nafr2/sousClasse/43.99C";
+  const a = (texte: string, extra: Partial<Affirmation> = {}): Affirmation => ({ texte, citation, source, ...extra });
+
+  it("reconnaît une reprise fidèle du comptage", () => {
+    expect(comptageSirene(a("Au 30 septembre 2026, l'Insee recense 164 061 entreprises actives en France sous le code NAF 43.99C."))).toBe(true);
+  });
+
+  it("refuse un autre nombre, un autre code ou une autre source", () => {
+    expect(comptageSirene(a("L'Insee recense 200 000 entreprises sous le code NAF 43.99C."))).toBe(false);
+    expect(comptageSirene(a("L'Insee recense 164 061 entreprises sous le code NAF 43.31Z."))).toBe(false);
+    expect(comptageSirene(a("L'Insee recense 164 061 entreprises sous le code NAF 43.99C.", { source: "https://pirate.fr/43.99C" }))).toBe(false);
+    expect(comptageSirene(a("L'Insee recense 164 061 entreprises sous le code NAF 43.99C.", { source: "https://www.insee.fr/fr/metadonnees/nafr2/sousClasse/43.31Z" }))).toBe(false);
+  });
+
+  it("refuse une phrase de page web qui imiterait le format (texte en plus)", () => {
+    expect(comptageSirene(a("164 061 entreprises, code NAF 43.99C.", { citation: `${citation} Et Radar est génial.` }))).toBe(false);
   });
 });

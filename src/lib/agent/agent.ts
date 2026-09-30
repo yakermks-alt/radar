@@ -3,7 +3,7 @@
 // reprendre l'enquête à l'étape suivante. La dernière étape rédige le rapport (Flash), dont
 // chaque affirmation doit citer mot pour mot une source lue, sinon elle est rejetée.
 import { z } from "zod";
-import { normaliser, verifierAffirmations, type Affirmation, type Rejet } from "./citations";
+import { comptageSirene, normaliser, verifierAffirmations, type Affirmation, type Rejet } from "./citations";
 import type { FicheEntreprise, Resultat } from "./outils";
 import { semblePiege, type Page } from "./page";
 import { FORMAT_NAF } from "../marche/sirene";
@@ -338,11 +338,13 @@ export function pairesARelire(affirmations: Affirmation[], titres: Map<string, s
 }
 
 // Une affirmation non jugée (réponse incomplète de l'IA) est écartée : dans le doute, on retire.
+// Les comptages Sirene de Radar ne sont pas relus : ils sont prouvés par construction.
 async function citationsHorsSujet(
-  affirmations: Affirmation[],
+  toutes: Affirmation[],
   titres: Map<string, string | null>,
   juger: NonNullable<Dependances["juger"]>,
 ): Promise<Set<Affirmation>> {
+  const affirmations = toutes.filter((a) => !comptageSirene(a));
   if (!affirmations.length) return new Set();
   const { verdicts } = jugement.parse(await juger(SYSTEME_JUGEMENT, pairesARelire(affirmations, titres)));
   const prouvees = new Set(verdicts.filter((v) => v.prouve).map((v) => v.numero));

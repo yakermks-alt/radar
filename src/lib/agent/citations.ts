@@ -120,3 +120,15 @@ export function verifierAffirmations(
   }
   return { gardees, rejetees };
 }
+
+// Comptage Sirene fait par Radar lui-même (outil « entreprises » avec un code NAF) : la phrase est
+// écrite par le code à partir de l'API de l'Insee, pas tirée d'une page. Si l'affirmation reprend ce
+// comptage (même nombre, même code), elle est prouvée par construction : la relire par une IA ne
+// mesure que les erreurs du relecteur (2e banc du 30/09 : 4 refus sur 4 de ces phrases par Flash-Lite).
+const PHRASE_SIRENE = /^Au \d{4}-\d{2}-\d{2}, ([\d\s  ]+) entreprises actives en France ont pour activité principale le code NAF (\d{2}\.\d{2}[A-Z]) \(répertoire Sirene de l'Insee\)\.$/;
+
+export function comptageSirene(a: Affirmation): boolean {
+  const m = PHRASE_SIRENE.exec(a.citation.trim());
+  if (!m || a.source !== `https://www.insee.fr/fr/metadonnees/nafr2/sousClasse/${m[2]}`) return false;
+  return a.texte.includes(m[2]) && chiffresProuves(a.texte, a.citation);
+}

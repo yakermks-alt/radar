@@ -24,6 +24,14 @@ const bonne1 = { texte: "Des clients ne peuvent pas faire d'avoir sur mobile.", 
 const bonne2 = { texte: "L'offre Pro d'Abby coûte 9 € HT par mois.", source: "https://abby.fr/tarifs", citation: "Offre Pro : 9,00 €/mois HT" };
 
 describe("evaluerRapport", () => {
+  it("ne compte pas le refus du relecteur sur un comptage Sirene fait par Radar", () => {
+    const url = "https://www.insee.fr/fr/metadonnees/nafr2/sousClasse/47.11C";
+    const citation = "Au 2026-09-30, 6 718 entreprises actives en France ont pour activité principale le code NAF 47.11C (répertoire Sirene de l'Insee).";
+    const sirene = { texte: "Au 30 septembre 2026, 6 718 entreprises actives en France ont le code NAF 47.11C.", source: url, citation };
+    const e = evaluerRapport(rapport([bonne1, sirene]), new Map([...sources, [url, citation]]), [{ numero: 1, prouve: true }, { numero: 2, prouve: false }], "flash-lite");
+    expect(e).toMatchObject({ gardees: 2, non_prouvees_juge: 0, inventions: 0 });
+  });
+
   it("ne compte aucune invention dans un rapport propre", () => {
     const e = evaluerRapport(rapport([bonne1, bonne2]), sources, [{ numero: 1, prouve: true }, { numero: 2, prouve: true }], "flash");
     expect(e).toEqual({ gardees: 2, citations_absentes: 0, chiffres_non_prouves: 0, noms_non_prouves: 0, non_prouvees_juge: 0, juge: "flash", inventions: 0, sections_couvertes: 2, fautes: [] });

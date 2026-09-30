@@ -1,7 +1,7 @@
 // Évaluation d'un rapport pour le banc de tests : on relit chaque affirmation GARDÉE, par trois
 // contrôles indépendants de la chaîne de rédaction. Une affirmation fautive à au moins un contrôle
 // est une invention. Taux d'invention = inventions / affirmations gardées.
-import { chiffresProuves, nomsProuves, verifierAffirmations, type Affirmation } from "./citations";
+import { chiffresProuves, comptageSirene, nomsProuves, verifierAffirmations, type Affirmation } from "./citations";
 import { pairesARelire, type Rapport } from "./agent";
 import type { Evaluation, Faute } from "./mesures";
 
@@ -67,11 +67,12 @@ export function evaluerRapport(
   });
 
   // 3. Relecture par un autre modèle, plus exigeant. Réponse manquante = fautive (dans le doute).
+  // Exception : les comptages Sirene faits par Radar, prouvés par construction (comptageSirene).
   let non_prouvees_juge = 0;
   if (verdicts) {
     const prouvees = new Set(verdicts.filter((v) => v.prouve).map((v) => v.numero));
-    gardees.forEach((_, i) => {
-      if (!prouvees.has(i + 1)) {
+    gardees.forEach((a, i) => {
+      if (!prouvees.has(i + 1) && !comptageSirene(a)) {
         non_prouvees_juge++;
         noter(i, "relecteur");
       }
