@@ -75,7 +75,8 @@
 - [x] (Claude) Clé Insee dans les secrets GitHub et la tâche de nuit (29/09)
 - [x] (Claude) Comptage corrigé : sans le paramètre `date`, Sirene comptait aussi les entreprises actives par le passé (82 765 boulangeries au lieu de 40 561) (29/09)
 - [x] (Claude) Passage à la NAF 2025 préparé (30/09) : table de passage officielle de l'Insee (`data/naf-rev2-vers-naf2025.json`, édition janvier 2026), bascule automatique le 5 janvier 2027 (un code rév. 2 est converti et ses codes 2025 additionnés ; un code 2025 est accepté tel quel). Vérifié sur Sirene avec le champ NAF 2025 déjà diffusé : infirmiers 146 889 contre 148 915 (−1,4 %), boulangeries 36 540 contre 40 557 (−10 %, codes 2025 pas encore attribués à toutes les entreprises)
-- [ ] (Claude) Élargir la liste d'applis (plus de termes de recherche par métier)
+- [x] (Claude) Élargir la liste d'applis (30/09 soir, remarque de Maksen : « il y en a qui n'ont même pas 20 avis ») : 161 recherches par métier, 50 résultats chacune, liste connue gardée ; 180 nouvelles applis triées par l'IA, 20 grand public écartées à la main (`exclusions.json`), **407 applis** ; +13 620 avis (environ 33 800). Autres App Stores francophones mesurés (Luxembourg, Afrique, Maghreb…) : 42 avis sur 40 applis, écartés
+- [x] (Claude) Classement honnête : 10 avis et 2 applis au minimum pour entrer dans le classement (avant : médiane de 12 avis dans le Top 20, 4 opportunités à 3 avis), pastille « signal fort / moyen »
 
 **Fin de phase :** chaque opportunité affiche ses besoins, les faiblesses des applis en place et la taille réelle du marché.
 
