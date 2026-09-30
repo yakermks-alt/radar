@@ -130,9 +130,10 @@
 - [x] (Claude) Page admin : utilisateurs, équipes, enquêtes, erreurs, tâches de nuit, quotas (30/09)
 - [x] (Toi) Migration 0007 collée, applications OAuth Google et GitHub branchées dans Supabase (30/09)
 - [x] (Claude) Page de confidentialité, mise en ligne (30/09) ; première connexion réussie, compte de Maksen passé admin
-- [x] (Toi) Connexion Google publiée, ouverte à tout le monde (30/09) (Authentication > Providers)
+- [x] (Toi) Connexion Google publiée, ouverte à tout le monde (30/09)
 - [ ] (Toi) Compte Stripe (mode test) et clé `sk_test_` dans `.env.local` ; compte Resend et clé dans les secrets GitHub
-- [ ] (Claude) Mise en ligne, puis test de bout en bout : connexion, invitation, enquête, suivi, paiement test, email
+- [x] (Claude) Mise en ligne (30/09), connexion testée
+- [ ] (Claude) Test de bout en bout : invitation, enquête, suivi, paiement test, email
 
 **Fin de phase :** un vrai SaaS utilisable par quelqu'un d'autre.
 
