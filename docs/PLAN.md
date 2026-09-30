@@ -143,9 +143,10 @@
 **But :** que ce soit beau et solide.
 
 - [x] (Toi + Claude) Design (30/09 nuit) : 3 séries de directions refusées (trop sobre, puis « trop IA »), puis retenu un vrai logiciel pro : couleurs de V2 (vert nuit et vert), navigation de V4 (colonne d'icônes + liste des enquêtes), police Onest, en-tête = barre blanche + carte de titre à onglets. Charte dans `MASTER.md`, planche « Radar : directions visuelles ». Appliqué à tout le site et mis en ligne : rapport à onglets, carte Fiabilité, prix marqués HT/TTC et prix annuels ramenés au mois, Top 20 filtrable, nouvelle enquête avec idées du Top 20, enquête en direct, états vides, version téléphone
-- [ ] (Claude) Page d'accueil, page tarifs, première connexion guidée
-- [ ] (Claude) Audit de sécurité complet (accès à la base, API, injection dans l'agent, secrets) + attaque en direct
-- [ ] (Claude) Performances et affichage sur mobile
+- [ ] (Toi) Choisir la page d'accueil publique parmi 4 propositions (planche « Radar : pages d'accueil ») ; (Claude) puis la coder avec la page Tarifs
+- [x] (Claude) Première connexion guidée : carte « Bien démarrer », 3 étapes cochées d'après les données de l'équipe (suivre, enquêter, inviter), masquable (30/09)
+- [x] (Claude) Audit de sécurité et attaque en direct (30/09) : `npm run attaque`, 55 contrôles sur le site en ligne avec deux comptes de test (victime et pirate) : pages, actions serveur appelées à la main avec de faux numéros, CSRF, API Supabase avec la clé publique et avec la session du pirate (10 tables, 4 fonctions, se déclarer admin), redirections, faux webhook, en-têtes, nom piégé. **0 faille.** Déjà en place : RLS sans règle et droits retirés partout, secrets vérifiés par gitleaks à chaque commit, 0 dépendance vulnérable, agent protégé des pages piégées (tests). Reste : désactiver la connexion par email dans Supabase (inutilisée) ; limites connues : une session déconnectée reste valable jusqu'à 1 h (jeton vérifié sur place), pas de limite de débit par personne (quotas par équipe seulement)
+- [x] (Claude) Mobile et vitesse (30/09) : tableau des opportunités lisible sur téléphone (plus de défilement de côté), captures de toutes les pages vérifiées ; session vérifiée sur place (getClaims, clé ES256 de Supabase) au lieu d'un appel réseau, profil et équipe en une requête : pages connectées servies en 0,5 à 1 s
 - [ ] (Toi) Vidéo de démo de 60 secondes
 
 **Fin de phase :** un lien public, une vidéo, un projet montrable.
