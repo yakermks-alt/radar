@@ -84,6 +84,7 @@ await avecJournal(
       db
         .from("apps")
         .select("id, store_id, nom")
+        .eq("store", "appstore") // les pages Trustpilot ont leur propre collecte
         .eq("active", true)
         .order("id"),
     );

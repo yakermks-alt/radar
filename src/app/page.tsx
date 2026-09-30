@@ -106,7 +106,7 @@ async function ColonneFiltres({ filtres }: { filtres: Filtres }) {
           Filtrer
         </button>
       </form>
-      <p className="mt-auto rounded-bouton bg-fond p-3 text-xs leading-relaxed text-doux">Classement recalculé chaque nuit à partir des avis négatifs de {nbApps} applis professionnelles.</p>
+      <p className="mt-auto rounded-bouton bg-fond p-3 text-xs leading-relaxed text-doux">Classement recalculé chaque nuit à partir des avis négatifs de {nbApps} applis et logiciels professionnels (App Store et Trustpilot).</p>
     </aside>
   );
 }
@@ -119,7 +119,7 @@ async function Tableau({ filtres }: { filtres: Filtres }) {
       <div className={`${CARTE} px-5 py-[18px]`}>
         <h1 className="text-2xl font-bold tracking-[-0.02em]">{plan === "pro" ? "Top 20 des opportunités" : "Les 3 opportunités du jour"}</h1>
         <p className="mt-1.5 text-[13px] text-doux">
-          Mis à jour chaque nuit · {nbApps} applis suivies · {nbGroupes} besoins regroupés à partir des plaintes de leurs utilisateurs
+          Mis à jour chaque nuit · {nbApps} applis et logiciels suivis · {nbGroupes} besoins regroupés à partir des plaintes de leurs utilisateurs
         </p>
       </div>
       {lignes.length === 0 ? (

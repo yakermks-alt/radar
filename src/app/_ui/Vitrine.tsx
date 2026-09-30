@@ -88,13 +88,13 @@ export async function Vitrine() {
       <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-4 pt-8 pb-12 md:px-7 md:pt-12">
         <div className="flex max-w-[760px] flex-col gap-3.5">
           <p className="text-[13px] text-doux">
-            {maj ? `Mis à jour le ${maj}` : "Mis à jour chaque nuit"} · {nb(apps.count)} applis suivies · {nb(avis.count)} avis
+            {maj ? `Mis à jour le ${maj}` : "Mis à jour chaque nuit"} · {nb(apps.count)} applis et logiciels suivis · {nb(avis.count)} avis
           </p>
           <h1 className="text-[clamp(28px,4.2vw,42px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance">
             Les besoins que les logiciels pro ne couvrent pas, classés chaque nuit.
           </h1>
           <p className="max-w-[56ch] text-base leading-relaxed text-texte-2">
-            Tiré des avis 1 et 2 étoiles de leurs propres clients, avec la taille réelle du marché d&apos;après l&apos;Insee. Pour chaque besoin, un agent enquête sur les concurrents et leurs prix, et cite ses sources mot pour mot.
+            Tiré des avis 1 et 2 étoiles de leurs propres clients (App Store et Trustpilot), avec la taille réelle du marché d&apos;après l&apos;Insee. Pour chaque besoin, un agent enquête sur les concurrents et leurs prix, et cite ses sources mot pour mot.
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export async function Vitrine() {
 
         <section aria-label="Comment ça marche" className="grid gap-3.5 md:grid-cols-3">
           {[
-            ["Les plaintes", `${nb(avis.count)} avis négatifs d'applis professionnelles, relus chaque nuit et regroupés par besoin.`],
+            ["Les plaintes", `${nb(avis.count)} avis d'applis et de logiciels professionnels (App Store, Trustpilot), relus et regroupés par besoin.`],
             ["L'enquête", "Pour un besoin, l'agent cherche les concurrents, lit leurs pages de prix et compte les entreprises du métier."],
             ["La preuve", "Chaque affirmation du rapport cite sa source mot pour mot. Sans citation exacte, elle est retirée."],
           ].map(([titre, texte]) => (

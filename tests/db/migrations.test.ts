@@ -411,3 +411,10 @@ describe("comptes et équipes (0007)", () => {
     await expect(db.exec(`insert into public.stripe_evenements (id, type) values ('x', 'y')`)).rejects.toThrow(/check constraint/);
   });
 });
+
+describe("sources d'avis (0008)", () => {
+  it("accepte les SaaS de Trustpilot et refuse une source inconnue", async () => {
+    await db.exec(`insert into public.apps (store, store_id, nom, secteur) values ('trustpilot', 'zelty.fr', 'Zelty', 'restauration')`);
+    await expect(db.exec(`insert into public.apps (store, store_id, nom, secteur) values ('capterra', 'x', 'X', 'y')`)).rejects.toThrow(/check constraint/);
+  });
+});

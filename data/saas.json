@@ -1,0 +1,17 @@
+{
+  "compta-facturation": ["Pennylane", "Tiime", "Indy", "Freebe", "Abby", "Axonaut", "Evoliz", "Henrri", "Facture.net", "Sage", "Cegid", "EBP", "Dougs", "L-Expert-comptable.com", "Keobiz", "Agicap", "Fygr", "Inqom", "MyUnisoft", "Libeo", "Quickbooks France", "Zervant", "Sellsy"],
+  "banque-pro": ["Qonto", "Shine", "Memo Bank", "Blank", "Manager.one", "Swan", "Finom", "Anytime"],
+  "planning-rh": ["PayFit", "Lucca", "Silae", "Eurécia", "Combo planning", "Skello", "Factorial", "Kelio", "Octime", "Snapshift", "Bodet Software", "Welcome to the Jungle"],
+  "restauration": ["Zelty", "L'Addition", "Popina", "Tiller", "Innovorder", "Zenchef", "TheFork Manager", "Sunday app", "Obypay", "Cashpad", "Hiboutik", "Lightspeed France"],
+  "caisse-commerce": ["SumUp", "Wizishop", "PrestaShop", "Shopify France", "Kiliba", "Sendcloud", "Boxtal", "Ekwateur Pro"],
+  "vente-crm": ["noCRM", "Axonaut CRM", "Pipedrive", "Hubspot", "Salesforce France", "Yousign", "Docusign", "Lemlist", "La Growth Machine", "Ringover", "Aircall"],
+  "sante-liberal": ["Doctolib", "Maiia", "Weda", "Crossway", "Vega infirmier", "Albus", "Kiné+", "Keldoc", "Stellair", "Topaz", "Medoucine", "Julie Solutions"],
+  "immobilier": ["Hektor", "Apimo", "Netty", "Rentila", "Qalimo", "ImmoFacile", "Seiitra", "Gestion Locative Qui Ne Dort Jamais", "Smovin", "Matera", "Bellman"],
+  "btp-artisans": ["Obat", "Tolteck", "Batappli", "Extrabat", "Onaya", "Graneet", "Finalcad", "Costructor", "Hemea", "Travaux.com"],
+  "beaute-bien-etre": ["Kiute", "Flexy", "Salonkee", "Treatwell", "Booksy", "Planity"],
+  "juridique-conseil": ["Legalstart", "Captain Contrat", "LegalPlace", "Secib", "Jarvis Legal", "Legalvision"],
+  "education-enfance": ["Meeko", "Kidizz", "Ornikar", "Stych"],
+  "associations": ["HelloAsso", "AssoConnect", "Weezevent", "Billetweb"],
+  "hotellerie-tourisme": ["Amenitiz", "Mews", "Lodgify", "SuperHote", "Beds24", "Smoobu", "Guesty", "Hostaway"],
+  "transport-livraison": ["Stuart", "Cubyn", "Shippingbo", "Upela"]
+}
