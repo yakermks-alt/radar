@@ -7,6 +7,7 @@ import { exigerContexte } from "@/lib/serveur/session";
 import { titresSuivis } from "@/lib/serveur/suivi";
 import { suivreOpportunite } from "./actions";
 import { BarreHaut } from "./_ui/BarreHaut";
+import { Guide } from "./_ui/Guide";
 import { BOUTON_PRINCIPAL, CARTE, CHAMP } from "./_ui/styles";
 import { libelleSecteur, versSujet } from "./_ui/sujet";
 
@@ -33,6 +34,9 @@ export default async function Accueil({ searchParams }: PageProps<"/">) {
       <main className="flex min-w-0 flex-1 flex-col">
         <BarreHaut chemin={[{ libelle: "Opportunités" }]} />
         <div className="flex flex-col gap-4 px-4 py-5 md:px-7">
+          <Suspense fallback={null}>
+            <GuideConnecte />
+          </Suspense>
           <Suspense fallback={<p className="text-doux">Chargement…</p>}>
             <Tableau filtres={filtres} />
           </Suspense>
@@ -40,6 +44,11 @@ export default async function Accueil({ searchParams }: PageProps<"/">) {
       </main>
     </>
   );
+}
+
+async function GuideConnecte() {
+  await connection();
+  return <Guide c={await exigerContexte("/")} />;
 }
 
 // Offre gratuite : seul le lot du jour (3 opportunités) quitte le serveur ; les autres ne sont que comptées.
