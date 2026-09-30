@@ -19,12 +19,13 @@ export async function proxy(requete: NextRequest) {
       },
     },
   });
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims : jeton vérifié sur place avec la clé publique de Supabase (ES256, gardée en mémoire),
+  // et rafraîchi s'il a expiré. Un aller-retour réseau de moins que getUser à chaque page.
+  const { data } = await supabase.auth.getClaims();
+  const connecte = Boolean(data?.claims?.sub);
 
   const chemin = requete.nextUrl.pathname;
-  if (!user && !OUVERTES.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {
+  if (!connecte && !OUVERTES.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {
     const url = requete.nextUrl.clone();
     url.pathname = "/connexion";
     url.search = chemin === "/" ? "" : `?${new URLSearchParams({ suivant: chemin + requete.nextUrl.search })}`;

@@ -67,5 +67,6 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
 // Ce que l'offre d'une équipe laisse voir du classement : tout le Top 20 en Pro, le lot du jour en gratuit.
 export async function opportunitesVisibles(plan: Plan, date = new Date()): Promise<{ visibles: Opportunite[]; total: number }> {
   const classement = await topOpportunites(OFFRES.pro.opportunites);
-  return { visibles: plan === "pro" ? classement : selectionDuJour(classement, date), total: classement.length };
+  const visibles = plan === "pro" ? classement : selectionDuJour(classement, date).sort((a, b) => a.rang - b.rang);
+  return { visibles, total: classement.length };
 }

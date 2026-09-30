@@ -119,15 +119,15 @@ async function Tableau({ filtres }: { filtres: Filtres }) {
         </div>
       ) : (
         <section className={`${CARTE} overflow-x-auto`}>
-          <table className="chiffres w-full min-w-[720px] border-collapse">
+          <table className="chiffres w-full border-collapse md:min-w-[720px]">
             <thead>
               <tr className="bg-surface-2 text-left text-[12.5px] text-doux">
-                <th className="w-10 px-4 py-2.5 font-semibold">#</th>
+                <th className="w-8 py-2.5 pr-1 pl-4 font-semibold md:w-10 md:px-4">#</th>
                 <th className="px-3 py-2.5 font-semibold">Besoin non couvert</th>
-                <th className="w-40 px-3 py-2.5 font-semibold">Score</th>
-                <th className="px-3 py-2.5 text-right font-semibold">Entreprises</th>
-                <th className="px-3 py-2.5 text-right font-semibold">Avis</th>
-                <th className="px-4 py-2.5">
+                <th className="w-14 px-3 py-2.5 font-semibold md:w-40">Score</th>
+                <th className="hidden px-3 py-2.5 text-right font-semibold md:table-cell">Entreprises</th>
+                <th className="hidden px-3 py-2.5 text-right font-semibold md:table-cell">Avis</th>
+                <th className="hidden px-4 py-2.5 md:table-cell">
                   <span className="sr-only">Action</span>
                 </th>
               </tr>
@@ -161,7 +161,7 @@ function Ligne({ o, rang, suivie }: { o: Opportunite; rang: number; suivie: bool
   return (
     <tbody className="border-t border-trait">
       <tr className="align-top transition-colors duration-150 ease-radar hover:bg-surface-2">
-        <td className="px-4 py-3 font-semibold text-doux">{rang}</td>
+        <td className="py-3 pr-1 pl-4 font-semibold text-doux md:px-4">{rang}</td>
         <td className="px-3 py-3">
           <details className="group">
             <summary className="cursor-pointer list-none font-semibold [&::-webkit-details-marker]:hidden">
@@ -201,40 +201,51 @@ function Ligne({ o, rang, suivie }: { o: Opportunite; rang: number; suivie: bool
           </details>
           <div className="mt-0.5 text-xs text-doux">
             {libelleSecteur(o.secteur)} · {o.nbApps} applis concernées
+            <span className="md:hidden">{o.marche ? ` · ${o.marche.total.toLocaleString("fr-FR")} entreprises` : ""}</span>
+          </div>
+          {/* Sur téléphone, les actions passent sous le titre (le tableau tient dans la largeur). */}
+          <div className="mt-2.5 md:hidden">
+            <Actions o={o} suivie={suivie} />
           </div>
         </td>
         <td className="px-3 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-1.5 flex-1 rounded-full bg-trait">
+            <div className="hidden h-1.5 flex-1 rounded-full bg-trait md:block">
               <div className="h-full rounded-full bg-vert" style={{ width: `${o.score * 10}%` }} />
             </div>
             <span className="w-8 font-bold">{o.score.toFixed(1).replace(".", ",")}</span>
           </div>
         </td>
-        <td className="px-3 py-3 text-right">{o.marche ? o.marche.total.toLocaleString("fr-FR") : "–"}</td>
-        <td className="px-3 py-3 text-right">{o.nbAvis}</td>
-        <td className="px-4 py-3 text-right">
-          <div className="flex justify-end gap-2">
-          {suivie ? (
-            <Link href="/suivi" className="inline-block rounded-bouton bg-vert-clair px-3 py-1.5 text-[13px] font-semibold text-vert-texte no-underline">
-              Suivie
-            </Link>
-          ) : (
-            <form action={suivreOpportunite.bind(null, o.id)}>
-              <button type="submit" className="rounded-bouton border border-bordure bg-surface px-3 py-1.5 text-[13px] font-semibold text-texte transition-colors duration-150 ease-radar hover:bg-surface-2">
-                Suivre
-              </button>
-            </form>
-          )}
-          <Link
-            href={`/enquetes?${new URLSearchParams({ sujet: versSujet(o.nom) })}`}
-            className="inline-block rounded-bouton border border-bordure bg-surface px-3 py-1.5 text-[13px] font-semibold text-texte no-underline transition-colors duration-150 ease-radar hover:border-vert hover:bg-vert-clair hover:text-vert-fonce"
-          >
-            Enquêter
-          </Link>
-          </div>
+        <td className="hidden px-3 py-3 text-right md:table-cell">{o.marche ? o.marche.total.toLocaleString("fr-FR") : "–"}</td>
+        <td className="hidden px-3 py-3 text-right md:table-cell">{o.nbAvis}</td>
+        <td className="hidden px-4 py-3 text-right md:table-cell">
+          <Actions o={o} suivie={suivie} />
         </td>
       </tr>
     </tbody>
+  );
+}
+
+function Actions({ o, suivie }: { o: Opportunite; suivie: boolean }) {
+  return (
+    <div className="flex gap-2 md:justify-end">
+      {suivie ? (
+        <Link href="/suivi" className="inline-block rounded-bouton bg-vert-clair px-3 py-1.5 text-[13px] font-semibold text-vert-texte no-underline">
+          Suivie
+        </Link>
+      ) : (
+        <form action={suivreOpportunite.bind(null, o.id)}>
+          <button type="submit" className="rounded-bouton border border-bordure bg-surface px-3 py-1.5 text-[13px] font-semibold text-texte transition-colors duration-150 ease-radar hover:bg-surface-2">
+            Suivre
+          </button>
+        </form>
+      )}
+      <Link
+        href={`/enquetes?${new URLSearchParams({ sujet: versSujet(o.nom) })}`}
+        className="inline-block rounded-bouton border border-bordure bg-surface px-3 py-1.5 text-[13px] font-semibold text-texte no-underline transition-colors duration-150 ease-radar hover:border-vert hover:bg-vert-clair hover:text-vert-fonce"
+      >
+        Enquêter
+      </Link>
+    </div>
   );
 }

@@ -40,39 +40,36 @@ type LigneProfil = {
   email_matin: boolean;
   secteurs: string[];
   equipe_active: number | null;
+  membres: {
+    role: "proprietaire" | "membre";
+    equipe_id: number;
+    equipes: { id: number; nom: string; plan: Plan; abonnement_statut: string | null; fin_periode: string | null; stripe_client: string | null };
+  }[];
 };
 
-type LigneMembre = {
-  role: "proprietaire" | "membre";
-  equipes: { id: number; nom: string; plan: Plan; abonnement_statut: string | null; fin_periode: string | null; stripe_client: string | null };
-};
+const PROFIL = "id, email, nom, admin, email_matin, secteurs, equipe_active, membres(role, equipe_id, equipes(id, nom, plan, abonnement_statut, fin_periode, stripe_client))";
 
-// Personne connectée et son équipe active, ou null. getUser() vérifie le jeton auprès de Supabase
-// (un cookie falsifié ne passe pas). Mis en cache pour la durée d'une requête.
+// Personne connectée et son équipe active, ou null. Le jeton est vérifié sur place (getClaims :
+// signature ES256 de Supabase, date d'expiration) ; profil, adhésion et équipe arrivent en une seule
+// requête. Mis en cache pour la durée d'une requête.
 export const contexte = cache(async (): Promise<Contexte | null> => {
   const supabase = await clientSession();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user?.email) return null;
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub || typeof claims.email !== "string" || !claims.email) return null;
 
   const db = baseServeur();
-  let { data: profil } = await db.from("profils").select("id, email, nom, admin, email_matin, secteurs, equipe_active").eq("id", user.id).maybeSingle<LigneProfil>();
-  if (!profil?.equipe_active) {
+  const lire = async () => (await db.from("profils").select(PROFIL).eq("id", claims.sub).maybeSingle<LigneProfil>()).data;
+  let profil = await lire();
+  let membre = profil?.membres.find((m) => m.equipe_id === profil?.equipe_active);
+  if (!profil || !membre) {
     // Première visite après connexion, ou équipe quittée : profil et équipe (re)créés.
-    const { error } = await db.rpc("premiere_connexion", { p_id: user.id, p_email: user.email, p_nom: nomAffiche(user.user_metadata) });
+    const { error } = await db.rpc("premiere_connexion", { p_id: claims.sub, p_email: claims.email, p_nom: nomAffiche(claims.user_metadata as Record<string, unknown> | undefined) });
     if (error) throw new Error(error.message);
-    ({ data: profil } = await db.from("profils").select("id, email, nom, admin, email_matin, secteurs, equipe_active").eq("id", user.id).maybeSingle<LigneProfil>());
+    profil = await lire();
+    membre = profil?.membres.find((m) => m.equipe_id === profil?.equipe_active);
   }
-  if (!profil?.equipe_active) return null;
-
-  const { data: membre } = await db
-    .from("membres")
-    .select("role, equipes(id, nom, plan, abonnement_statut, fin_periode, stripe_client)")
-    .eq("utilisateur_id", user.id)
-    .eq("equipe_id", profil.equipe_active)
-    .maybeSingle<LigneMembre>();
-  if (!membre) return null;
+  if (!profil || !membre) return null;
 
   return {
     utilisateur: { id: profil.id, email: profil.email, nom: profil.nom, admin: profil.admin, emailMatin: profil.email_matin, secteurs: profil.secteurs },
