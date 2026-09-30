@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { sessionTropAncienne } from "@/lib/comptes";
 
 // Rafraîchit la session Supabase à chaque requête et renvoie vers /connexion si personne n'est
 // connecté. Pages ouvertes : connexion et retour de Google/GitHub, rapports d'enquête (adresse
@@ -23,7 +24,14 @@ export async function proxy(requete: NextRequest) {
   // getClaims : jeton vérifié sur place avec la clé publique de Supabase (ES256, gardée en mémoire),
   // et rafraîchi s'il a expiré. Un aller-retour réseau de moins que getUser à chaque page.
   const { data } = await supabase.auth.getClaims();
-  const connecte = Boolean(data?.claims?.sub);
+  let connecte = Boolean(data?.claims?.sub);
+
+  // Session ouverte il y a plus de 90 jours (checklist sécurité du 29/09) : fermée sur cet appareil,
+  // puis retour à la connexion. Supabase gratuit n'a pas de durée maximale : on la fait ici.
+  if (connecte && sessionTropAncienne(data?.claims?.amr)) {
+    await supabase.auth.signOut({ scope: "local" });
+    connecte = false;
+  }
 
   const chemin = requete.nextUrl.pathname;
   if (!connecte && chemin !== ACCUEIL && !OUVERTES.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {

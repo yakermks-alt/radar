@@ -35,14 +35,14 @@ jobs:
     steps:
       - name: Vérifier le numéro
         run: '[[ -z "$ENQUETE_ID" || "$ENQUETE_ID" =~ ^[0-9]{1,9}$ ]] || { echo "Numéro invalide"; exit 1; }'
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - name: Modèle d'embeddings en cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: node_modules/@huggingface/transformers/.cache
           key: modele-embeddings-paraphrase-multilingual-minilm-l12-v2

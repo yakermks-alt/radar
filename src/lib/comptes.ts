@@ -31,3 +31,16 @@ export function nomAffiche(meta: Record<string, unknown> | undefined): string | 
   }
   return null;
 }
+
+// Session trop ancienne : plus de `jours` depuis la dernière vraie connexion (Google ou GitHub).
+// Le jeton de Supabase porte `amr` : [{ method, timestamp }] ; le rafraîchissement automatique ne
+// change pas ces dates. Sans date lisible, on considère la session comme trop ancienne (dans le doute).
+export const SESSION_JOURS = 90;
+
+export function sessionTropAncienne(amr: unknown, maintenant = Date.now(), jours = SESSION_JOURS): boolean {
+  const dates = (Array.isArray(amr) ? amr : [])
+    .map((a) => (a && typeof a === "object" ? (a as { timestamp?: unknown }).timestamp : undefined))
+    .filter((t): t is number => typeof t === "number" && t > 0);
+  if (!dates.length) return true;
+  return maintenant / 1000 - Math.max(...dates) > jours * 86_400;
+}

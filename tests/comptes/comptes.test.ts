@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cheminSur, messageErreurBase, nomAffiche } from "../../src/lib/comptes";
+import { cheminSur, messageErreurBase, nomAffiche, sessionTropAncienne } from "../../src/lib/comptes";
 import { numeroDuJour, OFFRES, planSelonStatut, selectionDuJour } from "../../src/lib/offres";
 
 describe("cheminSur (retour après connexion)", () => {
@@ -65,5 +65,25 @@ describe("planSelonStatut", () => {
   it("garde Pro tant que Stripe considère l'abonnement vivant", () => {
     for (const s of ["active", "trialing", "past_due"]) expect(planSelonStatut(s)).toBe("pro");
     for (const s of ["canceled", "unpaid", "incomplete", "incomplete_expired", "paused"]) expect(planSelonStatut(s)).toBe("gratuit");
+  });
+});
+
+describe("sessionTropAncienne (90 jours au plus)", () => {
+  const jour = 86_400;
+  const maintenant = Date.UTC(2026, 9, 1);
+  const il_y_a = (j: number) => [{ method: "oauth", timestamp: maintenant / 1000 - j * jour }];
+
+  it("garde une session récente, ferme une session de plus de 90 jours", () => {
+    expect(sessionTropAncienne(il_y_a(10), maintenant)).toBe(false);
+    expect(sessionTropAncienne(il_y_a(89), maintenant)).toBe(false);
+    expect(sessionTropAncienne(il_y_a(91), maintenant)).toBe(true);
+  });
+
+  it("prend la connexion la plus récente", () => {
+    expect(sessionTropAncienne([...il_y_a(200), ...il_y_a(3)], maintenant)).toBe(false);
+  });
+
+  it("ferme dans le doute si la date est absente ou illisible", () => {
+    for (const amr of [undefined, null, [], [{ method: "oauth" }], "x", [{ timestamp: "hier" }]]) expect(sessionTropAncienne(amr, maintenant)).toBe(true);
   });
 });

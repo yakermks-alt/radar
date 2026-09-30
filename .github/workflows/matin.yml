@@ -1,4 +1,5 @@
 # Email du matin : 3 opportunités par personne inscrite, vers 7 h (heure de Paris en été, 6 h en hiver).
+# Puis veille des anomalies : en cas d'anomalie, la tâche échoue et GitHub prévient par email.
 # Secrets du repo : NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, RESEND_API_KEY.
 name: Email du matin
 
@@ -23,11 +24,27 @@ jobs:
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - name: Envoyer
         run: npx tsx scripts/emails/matin.mts
+
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Chercher les anomalies
+        run: npx tsx scripts/securite/veille.mts
