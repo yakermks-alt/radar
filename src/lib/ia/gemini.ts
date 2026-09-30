@@ -3,6 +3,12 @@
 import { z } from "zod";
 import { pause } from "../collecte/appstore";
 
+// Texte limité à `max` caractères : la limite est envoyée à Gemini, mais s'il la dépasse quand même
+// (nuit du 30/09 : un nom de groupe trop long a fait échouer toute la collecte), on coupe au lieu d'échouer.
+export function texteCoupe(max: number) {
+  return z.string().overwrite((t) => (t.length > max ? t.slice(0, max - 1).trimEnd() + "…" : t)).max(max);
+}
+
 export const MODELES = {
   leger: "gemini-3.5-flash-lite", // tri, extraction, étapes de l'agent (~500 requêtes/jour)
   redaction: "gemini-3.8-flash", // rédaction finale uniquement (~20 requêtes/jour)

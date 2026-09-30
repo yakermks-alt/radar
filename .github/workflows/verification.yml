@@ -12,6 +12,9 @@ jobs:
   verifier:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      # Adresse factice : next.config.ts l'exige pour la CSP, aucun appel n'est fait pendant la vérification.
+      NEXT_PUBLIC_SUPABASE_URL: https://exemple.supabase.co
     steps:
       - uses: actions/checkout@v5
         with:

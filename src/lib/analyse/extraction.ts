@@ -2,7 +2,7 @@
 // Le problème est réécrit sans nom de marque, pour que des plaintes identiques visant des applis
 // différentes se retrouvent dans le même groupe.
 import { z } from "zod";
-import { genererJson } from "../ia/gemini";
+import { genererJson, texteCoupe } from "../ia/gemini";
 
 export const CATEGORIES = ["bug", "besoin", "prix", "support", "autre"] as const;
 export const TAILLE_LOT = 40;
@@ -12,8 +12,8 @@ export type AvisATrier = { id: number; app: string; secteur: string; note: numbe
 const verdict = z.object({
   id: z.number().int(),
   categorie: z.enum(CATEGORIES),
-  probleme: z.string().max(200).nullable(),
-  type_client: z.string().max(60).nullable(),
+  probleme: texteCoupe(200).nullable(),
+  type_client: texteCoupe(60).nullable(),
   gravite: z.number().int().min(1).max(3),
   signal_paiement: z.boolean(),
 });

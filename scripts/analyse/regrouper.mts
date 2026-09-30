@@ -7,7 +7,7 @@ import { z } from "zod";
 import { depuisPgvector, versPgvector } from "../../src/lib/analyse/embeddings";
 import { centre, communautes, fusionner, scorer } from "../../src/lib/analyse/regroupement";
 import { pause } from "../../src/lib/collecte/appstore";
-import { genererJson } from "../../src/lib/ia/gemini";
+import { genererJson, texteCoupe } from "../../src/lib/ia/gemini";
 import { creerCompteur, FORMAT_NAF, noteMarche } from "../../src/lib/marche/sirene";
 import { avecJournal, db, toutLire, verifier } from "../lib/base";
 
@@ -37,11 +37,11 @@ const nommage = z.object({
   groupes: z.array(
     z.object({
       index: z.number().int(),
-      nom: z.string().max(80),
-      resume: z.string().max(400),
-      secteur: z.string().max(40),
+      nom: texteCoupe(80),
+      resume: texteCoupe(400),
+      secteur: texteCoupe(40),
       faisabilite: z.number().min(0).max(10),
-      codes_naf: z.array(z.string()).max(3),
+      codes_naf: z.array(z.string()).overwrite((c) => c.slice(0, 3)).max(3),
     }),
   ),
 });
