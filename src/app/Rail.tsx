@@ -79,6 +79,8 @@ export type Personne = { initiale: string; admin: boolean } | null;
 
 export function Rail({ personne }: { personne: Personne }) {
   const chemin = usePathname();
+  // Visiteur non connecté : pas de colonne (vitrine, tarifs, connexion, rapport partagé).
+  if (!personne) return null;
   const liens = personne ? (personne.admin ? [...LIENS, ADMIN] : LIENS) : [];
   return (
     <nav

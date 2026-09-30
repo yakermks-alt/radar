@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cheminSur } from "@/lib/comptes";
 import { contexte } from "@/lib/serveur/session";
 import { CARTE } from "../_ui/styles";
+import { Logo } from "../_ui/Vitrine";
 
 export const metadata: Metadata = { title: "Connexion · Radar" };
 
@@ -25,6 +27,9 @@ export default async function Connexion({ searchParams }: PageProps<"/connexion"
     <main className="flex flex-1 items-center justify-center px-4 py-10">
       <div className={`${CARTE} flex w-full max-w-[420px] flex-col gap-5 p-6 md:p-8`}>
         <div>
+          <Link href="/" aria-label="Radar, accueil" className="mb-4 inline-flex">
+            <Logo taille={30} />
+          </Link>
           <h1 className="text-2xl font-bold tracking-[-0.02em]">Connexion à Radar</h1>
           <p className="mt-2 leading-relaxed text-texte-2">
             Des opportunités business tirées des vraies plaintes des clients, vérifiées par un agent enquêteur. Gratuit : 3 opportunités par jour et 1 enquête par semaine.

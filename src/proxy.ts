@@ -4,8 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 // Rafraîchit la session Supabase à chaque requête et renvoie vers /connexion si personne n'est
 // connecté. Pages ouvertes : connexion et retour de Google/GitHub, rapports d'enquête (adresse
 // secrète, partageable), webhook Stripe (signé), invitations (qui renvoient elles-mêmes à la connexion),
-// politique de confidentialité.
-const OUVERTES = ["/connexion", "/auth", "/enquete", "/api/stripe", "/rejoindre", "/confidentialite"];
+// politique de confidentialité, tarifs, et l'accueil (vitrine publique).
+const OUVERTES = ["/connexion", "/auth", "/enquete", "/api/stripe", "/rejoindre", "/confidentialite", "/tarifs"];
+const ACCUEIL = "/"; // ouverte aussi : la page choisit entre la vitrine publique et les opportunités
 
 export async function proxy(requete: NextRequest) {
   let reponse = NextResponse.next({ request: requete });
@@ -25,7 +26,7 @@ export async function proxy(requete: NextRequest) {
   const connecte = Boolean(data?.claims?.sub);
 
   const chemin = requete.nextUrl.pathname;
-  if (!connecte && !OUVERTES.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {
+  if (!connecte && chemin !== ACCUEIL && !OUVERTES.some((p) => chemin === p || chemin.startsWith(`${p}/`))) {
     const url = requete.nextUrl.clone();
     url.pathname = "/connexion";
     url.search = chemin === "/" ? "" : `?${new URLSearchParams({ suivant: chemin + requete.nextUrl.search })}`;

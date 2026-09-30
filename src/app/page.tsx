@@ -3,11 +3,12 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { OFFRES } from "@/lib/offres";
 import { baseServeur, opportunitesVisibles, type Opportunite } from "@/lib/serveur/base";
-import { exigerContexte } from "@/lib/serveur/session";
+import { contexte, exigerContexte } from "@/lib/serveur/session";
 import { titresSuivis } from "@/lib/serveur/suivi";
 import { suivreOpportunite } from "./actions";
 import { BarreHaut } from "./_ui/BarreHaut";
 import { Guide } from "./_ui/Guide";
+import { Vitrine } from "./_ui/Vitrine";
 import { BOUTON_PRINCIPAL, CARTE, CHAMP } from "./_ui/styles";
 import { libelleSecteur, versSujet } from "./_ui/sujet";
 
@@ -23,7 +24,10 @@ const CRITERES: Record<string, string> = {
 
 type Filtres = { q: string; secteur: string };
 
+// Visiteur non connecté : la vitrine publique. Personne connectée : ses opportunités.
 export default async function Accueil({ searchParams }: PageProps<"/">) {
+  await connection();
+  if (!(await contexte())) return <Vitrine />;
   const sp = await searchParams;
   const filtres: Filtres = { q: typeof sp.q === "string" ? sp.q.slice(0, 80) : "", secteur: typeof sp.secteur === "string" ? sp.secteur.slice(0, 40) : "" };
   return (

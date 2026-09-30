@@ -77,7 +77,12 @@ try {
   const { data: enq } = await admin.from("enquetes").insert({ sujet: "Enquête privée de la victime", equipe_id: eqV, statut: "en_cours", erreur: "test", budget: 1 }).select("id, jeton").single();
 
   console.log("\n== Pages");
-  for (const chemin of ["/", "/enquetes", "/suivi", "/equipe", "/compte", "/admin"]) {
+  const vitrine = await page("/");
+  const html = await vitrine.text();
+  const { data: top5 } = await admin.from("groupes").select("nom").order("score", { ascending: false }).limit(20);
+  verifier("Sans compte, / affiche la vitrine publique", vitrine.status === 200 && html.includes("Les besoins que les logiciels pro"));
+  verifier("La vitrine n'envoie pas le texte des opportunités masquées (n° 4 à 20)", (top5 ?? []).slice(3).every((g) => !html.includes(g.nom)));
+  for (const chemin of ["/enquetes", "/suivi", "/equipe", "/compte", "/admin"]) {
     const r = await page(chemin);
     verifier(`Sans compte, ${chemin} renvoie vers la connexion`, r.status === 307 && (r.headers.get("location") ?? "").includes("/connexion"));
   }
