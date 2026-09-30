@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { envServeur } from "../env";
+import { CLASSEMENT_MIN, solidite, type Solidite } from "../analyse/regroupement";
 import { OFFRES, selectionDuJour, type Plan } from "../offres";
 
 // Client serveur (clé secrète) : jamais importé côté navigateur, grâce à "server-only".
@@ -20,6 +21,7 @@ export type Opportunite = {
   secteur: string | null;
   nbAvis: number;
   nbApps: number;
+  solidite: Solidite;
   score: number;
   detail: Record<string, number>;
   faiblesses: Faiblesses | null;
@@ -43,6 +45,8 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
   const { data, error } = await baseServeur()
     .from("groupes")
     .select("id, nom, resume, secteur, nb_avis, score, score_detail, contexte, groupes_avis(distance, avis(note, titre, contenu, apps(nom)))")
+    .gte("nb_avis", CLASSEMENT_MIN.avis)
+    .gte("score_detail->nb_apps", CLASSEMENT_MIN.applis) // groupes trop minces : hors classement
     .order("score", { ascending: false })
     .order("distance", { referencedTable: "groupes_avis" })
     .limit(3, { referencedTable: "groupes_avis" })
@@ -56,6 +60,7 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
     secteur: g.secteur,
     nbAvis: g.nb_avis,
     nbApps: Number(g.score_detail.nb_apps ?? 0),
+    solidite: solidite(g.nb_avis, Number(g.score_detail.nb_apps ?? 0)),
     score: Number(g.score),
     detail: Object.fromEntries(Object.entries(g.score_detail).filter(([, v]) => typeof v === "number")) as Record<string, number>,
     faiblesses: g.contexte?.faiblesses ?? null,

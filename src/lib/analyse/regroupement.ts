@@ -121,3 +121,14 @@ export function fusionner(vecteurs: number[][], groupes: number[][], seuil: numb
     courants = courants.filter((_, i) => i !== meilleur.b);
   }
 }
+
+// Solidité d'une opportunité (30/09, remarque de Maksen : « il y en a qui n'ont même pas 20 avis »).
+// Sous le seuil minimum, un groupe n'entre pas dans le classement : 3 avis, c'est une anecdote.
+export const CLASSEMENT_MIN = { avis: 10, applis: 2 } as const;
+export type Solidite = "fort" | "moyen" | "faible";
+
+export function solidite(nbAvis: number, nbApps: number): Solidite {
+  if (nbAvis >= 30 && nbApps >= 4) return "fort";
+  if (nbAvis >= CLASSEMENT_MIN.avis && nbApps >= CLASSEMENT_MIN.applis) return "moyen";
+  return "faible";
+}

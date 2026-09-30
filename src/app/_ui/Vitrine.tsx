@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { OFFRES } from "@/lib/offres";
 import { baseServeur, topOpportunites } from "@/lib/serveur/base";
 import { BOUTON_PRINCIPAL, BOUTON_SECONDAIRE, CARTE } from "./styles";
+import { Solidite } from "./Solidite";
 import { libelleSecteur } from "./sujet";
 
 // Page d'accueil publique (direction B « Le classement », choisie le 30/09) : le vrai classement du
@@ -115,7 +116,7 @@ export async function Vitrine() {
                   <td className="px-3 py-3.5">
                     <div className="font-semibold">{o.nom}</div>
                     <div className="mt-0.5 text-xs text-doux">
-                      {libelleSecteur(o.secteur)} · {o.nbApps} applis concernées
+                      <Solidite niveau={o.solidite} nbAvis={o.nbAvis} nbApps={o.nbApps} /> {libelleSecteur(o.secteur)} · {o.nbApps} applis concernées
                       <span className="md:hidden">{o.marche ? ` · ${o.marche.total.toLocaleString("fr-FR")} entreprises` : ""}</span>
                     </div>
                   </td>

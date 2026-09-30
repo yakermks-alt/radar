@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { nettoyerVerdicts, type Verdict } from "../../src/lib/analyse/extraction";
-import { centre, communautes, fusionner, POIDS, scorer } from "../../src/lib/analyse/regroupement";
+import { centre, CLASSEMENT_MIN, communautes, fusionner, POIDS, scorer, solidite } from "../../src/lib/analyse/regroupement";
 
 // Vecteur normalisé proche d'un axe, avec un petit décalage pour varier les points.
 const autour = (axe: number, bruit: number, d = 8) => {
@@ -123,5 +123,22 @@ describe("nettoyerVerdicts", () => {
   it("efface le problème des avis « autre »", () => {
     const [r] = nettoyerVerdicts([{ id: 1 }], [v(1, { categorie: "autre", probleme: "x" })]);
     expect(r.probleme).toBeNull();
+  });
+});
+
+describe("solidite (classement honnête)", () => {
+  it("classe selon le nombre d'avis et d'applis", () => {
+    expect(solidite(69, 29)).toBe("fort");
+    expect(solidite(30, 4)).toBe("fort");
+    expect(solidite(191, 3)).toBe("moyen"); // beaucoup d'avis, mais sur trop peu d'applis pour « fort »
+    expect(solidite(12, 8)).toBe("moyen");
+    expect(solidite(9, 5)).toBe("faible");
+    expect(solidite(3, 3)).toBe("faible"); // 3 avis : une anecdote
+    expect(solidite(50, 1)).toBe("faible"); // une seule appli : son défaut à elle, pas un besoin du marché
+  });
+
+  it("le seuil du classement correspond au niveau « moyen »", () => {
+    expect(solidite(CLASSEMENT_MIN.avis, CLASSEMENT_MIN.applis)).toBe("moyen");
+    expect(solidite(CLASSEMENT_MIN.avis - 1, CLASSEMENT_MIN.applis)).toBe("faible");
   });
 });

@@ -4,6 +4,10 @@
 name: Banc de tests de l'agent
 
 on:
+  # 3e banc programmé le 1er octobre à 9 h 30 (heure de Paris), quota Gemini plein (décision du 30/09).
+  # À retirer après ce passage (sinon il revient chaque 1er octobre).
+  schedule:
+    - cron: "30 7 1 10 *"
   workflow_dispatch:
     inputs:
       taille:
@@ -38,7 +42,7 @@ jobs:
       INSEE_API_KEY: ${{ secrets.INSEE_API_KEY }}
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       # Jamais interpolés directement dans une commande : passés par variable, puis vérifiés.
-      TAILLE: ${{ inputs.taille }}
+      TAILLE: ${{ inputs.taille || '20' }}
       EVALUER: ${{ inputs.evaluer }}
       CONTINUER: ${{ inputs.continuer }}
     steps:

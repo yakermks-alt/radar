@@ -7,6 +7,7 @@ import { contexte, exigerContexte } from "@/lib/serveur/session";
 import { titresSuivis } from "@/lib/serveur/suivi";
 import { suivreOpportunite } from "./actions";
 import { BarreHaut } from "./_ui/BarreHaut";
+import { Solidite } from "./_ui/Solidite";
 import { Guide } from "./_ui/Guide";
 import { Vitrine } from "./_ui/Vitrine";
 import { BOUTON_PRINCIPAL, CARTE, CHAMP } from "./_ui/styles";
@@ -213,7 +214,7 @@ function Ligne({ o, rang, suivie }: { o: Opportunite; rang: number; suivie: bool
             </div>
           </details>
           <div className="mt-0.5 text-xs text-doux">
-            {libelleSecteur(o.secteur)} · {o.nbApps} applis concernées
+            <Solidite niveau={o.solidite} nbAvis={o.nbAvis} nbApps={o.nbApps} /> {libelleSecteur(o.secteur)} · {o.nbApps} applis concernées
             <span className="md:hidden">{o.marche ? ` · ${o.marche.total.toLocaleString("fr-FR")} entreprises` : ""}</span>
           </div>
           {/* Sur téléphone, les actions passent sous le titre (le tableau tient dans la largeur). */}

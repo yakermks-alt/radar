@@ -132,8 +132,8 @@ export function lireRecherche(json: unknown): AppTrouvee[] {
   }));
 }
 
-export function urlRecherche(terme: string): string {
-  const q = new URLSearchParams({ term: terme, country: "fr", entity: "software", limit: "25", lang: "fr_fr" });
+export function urlRecherche(terme: string, limite = 25): string {
+  const q = new URLSearchParams({ term: terme, country: "fr", entity: "software", limit: String(Math.min(200, Math.max(1, limite))), lang: "fr_fr" });
   return `https://itunes.apple.com/search?${q}`;
 }
 

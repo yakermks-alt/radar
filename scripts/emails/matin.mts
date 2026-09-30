@@ -5,6 +5,7 @@
 // --essai : affiche ce qui partirait, sans rien envoyer ni enregistrer.
 import { z } from "zod";
 import { choisir, composer, type OpportuniteEmail } from "../../src/lib/emails/matin";
+import { CLASSEMENT_MIN } from "../../src/lib/analyse/regroupement";
 import { pause } from "../../src/lib/collecte/appstore";
 import { db, sansErreur, verifier } from "../lib/base";
 
@@ -26,7 +27,15 @@ const jour = maintenant.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }
 const il_y_a_14_jours = new Date(maintenant.getTime() - 14 * 86_400_000).toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" });
 
 type Groupe = { nom: string; resume: string | null; secteur: string | null; score: number; contexte: { marche?: { total: number } | null } | null };
-const groupes: Groupe[] = await verifier(db.from("groupes").select("nom, resume, secteur, score, contexte").order("score", { ascending: false }).limit(80));
+const groupes: Groupe[] = await verifier(
+  db
+    .from("groupes")
+    .select("nom, resume, secteur, score, contexte")
+    .gte("nb_avis", CLASSEMENT_MIN.avis)
+    .gte("score_detail->nb_apps", CLASSEMENT_MIN.applis) // même classement que le site
+    .order("score", { ascending: false })
+    .limit(80),
+);
 const classement: OpportuniteEmail[] = groupes.map((g, i) => ({ rang: i + 1, nom: g.nom, resume: g.resume, secteur: g.secteur, score: Number(g.score), entreprises: g.contexte?.marche?.total ?? null }));
 if (!classement.length) {
   console.log("Aucun classement calculé : rien à envoyer.");
