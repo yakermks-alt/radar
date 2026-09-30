@@ -1,0 +1,33 @@
+# Email du matin : 3 opportunités par personne inscrite, vers 7 h (heure de Paris en été, 6 h en hiver).
+# Secrets du repo : NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, RESEND_API_KEY.
+name: Email du matin
+
+on:
+  schedule:
+    - cron: "3 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: email-matin
+  cancel-in-progress: false
+
+jobs:
+  matin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Envoyer
+        run: npx tsx scripts/emails/matin.mts

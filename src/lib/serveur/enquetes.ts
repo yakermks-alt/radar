@@ -5,9 +5,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Rapport } from "../agent/agent";
 import type { Mesures } from "../agent/mesures";
+import { ENQUETES_SITE_PAR_JOUR, OFFRES, type Plan } from "../offres";
 import { baseServeur } from "./base";
 
-export const ENQUETES_PAR_JOUR = 10; // quotas gratuits : ~1 000 recherches web/mois, ~500 appels Flash-Lite/jour
 export const BUDGET_ETAPES = 15;
 
 export type EtapeAffichee = {
@@ -31,6 +31,7 @@ export type Enquete = {
   erreur: string | null;
   mesures: Partial<Mesures>;
   reprises: number;
+  equipe_id: number | null;
   cree_le: string;
   maj_le: string;
 };
@@ -44,7 +45,7 @@ export async function enqueteParJeton(jeton: string): Promise<{ enquete: Enquete
   const db = baseServeur();
   const { data: enquete, error } = await db
     .from("enquetes")
-    .select("id, jeton, sujet, statut, budget, etapes_faites, rapport, erreur, mesures, reprises, cree_le, maj_le")
+    .select("id, jeton, sujet, statut, budget, etapes_faites, rapport, erreur, mesures, reprises, equipe_id, cree_le, maj_le")
     .eq("jeton", jeton)
     .maybeSingle<Enquete>();
   if (error) throw new Error(error.message);
@@ -70,35 +71,66 @@ export type EnqueteListee = Pick<Enquete, "jeton" | "sujet" | "statut" | "etapes
   verdict: string | null;
 };
 
-export async function dernieresEnquetes(n = 20): Promise<EnqueteListee[]> {
+// Enquêtes d'une équipe (les enquêtes du banc de tests et celles d'avant les comptes n'en ont pas).
+export async function dernieresEnquetes(equipe: number, n = 20): Promise<EnqueteListee[]> {
   const { data, error } = await baseServeur()
     .from("enquetes")
     .select("jeton, sujet, statut, etapes_faites, budget, cree_le, erreur, verdict:rapport->>verdict")
-    .is("banc", null) // les enquêtes du banc de tests restent à part
+    .eq("equipe_id", equipe)
     .order("cree_le", { ascending: false })
     .limit(n);
   if (error) throw new Error(error.message);
   return (data ?? []) as EnqueteListee[];
 }
 
-// Enquêtes lancées depuis minuit (heure de Paris), toutes personnes confondues.
-export async function enquetesDuJour(maintenant = new Date()): Promise<number> {
+const minuitParis = (maintenant: Date) => {
   const jour = maintenant.toLocaleDateString("sv-SE", { timeZone: "Europe/Paris" }); // AAAA-MM-JJ
   const decalage = maintenant.toLocaleString("en-US", { timeZone: "Europe/Paris", timeZoneName: "longOffset" }).match(/GMT([+-]\d{2}:\d{2})/)?.[1] ?? "+00:00";
+  return `${jour}T00:00:00${decalage}`;
+};
+
+// Ce qu'il reste à l'équipe : même calcul que reserver_enquete (qui reste seule juge au lancement).
+export async function quotaEquipe(equipe: number, plan: Plan, maintenant = new Date()): Promise<{ restantes: number; periode: "semaine" | "jour" }> {
+  const db = baseServeur();
+  const semaine = new Date(maintenant.getTime() - 7 * 86_400_000).toISOString();
+  const [s, j, site] = await Promise.all([
+    db.from("enquetes").select("id", { count: "exact", head: true }).eq("equipe_id", equipe).gt("cree_le", semaine),
+    db.from("enquetes").select("id", { count: "exact", head: true }).eq("equipe_id", equipe).gte("cree_le", minuitParis(maintenant)),
+    enquetesDuJour(maintenant),
+  ]);
+  if (s.error || j.error) throw new Error((s.error ?? j.error)!.message);
+  const offre = OFFRES[plan];
+  const parSemaine = offre.enquetesSemaine - (s.count ?? 0);
+  const parJour = offre.enquetesJour - (j.count ?? 0);
+  const restantes = Math.max(0, Math.min(parSemaine, parJour, ENQUETES_SITE_PAR_JOUR - site));
+  return { restantes, periode: plan === "gratuit" ? "semaine" : "jour" };
+}
+
+// Enquêtes lancées depuis minuit (heure de Paris), toutes personnes confondues.
+export async function enquetesDuJour(maintenant = new Date()): Promise<number> {
   const { count, error } = await baseServeur()
     .from("enquetes")
     .select("id", { count: "exact", head: true })
     .is("banc", null)
-    .gte("cree_le", `${jour}T00:00:00${decalage}`);
+    .gte("cree_le", minuitParis(maintenant));
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
 
-export async function creerEnquete(sujet: string): Promise<{ id: number; jeton: string }> {
+// Réserve l'enquête dans les quotas (équipe et site) en une seule opération atomique côté base.
+// Refus : erreur dont le message contient le code (quota_semaine, quota_jour, limite_site).
+export async function creerEnquete(sujet: string, equipe: number, utilisateur: string, plan: Plan): Promise<{ id: number; jeton: string }> {
+  const offre = OFFRES[plan];
   const { data, error } = await baseServeur()
-    .from("enquetes")
-    .insert({ sujet, budget: BUDGET_ETAPES })
-    .select("id, jeton")
+    .rpc("reserver_enquete", {
+      p_equipe: equipe,
+      p_utilisateur: utilisateur,
+      p_sujet: sujet,
+      p_budget: BUDGET_ETAPES,
+      p_max_semaine: offre.enquetesSemaine,
+      p_max_jour: offre.enquetesJour,
+      p_max_site: ENQUETES_SITE_PAR_JOUR,
+    })
     .single<{ id: number; jeton: string }>();
   if (error) throw new Error(error.message);
   return data;

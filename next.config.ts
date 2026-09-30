@@ -13,7 +13,7 @@ const CSP = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  "form-action 'self'",
+  "form-action 'self' https://checkout.stripe.com https://billing.stripe.com", // retour de paiement sans JavaScript
   `connect-src 'self' https://${SUPABASE} wss://${SUPABASE}${DEV ? " ws://localhost:*" : ""}`,
   "img-src 'self' data:",
   "font-src 'self'",

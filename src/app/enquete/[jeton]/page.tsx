@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { enqueteParJeton } from "@/lib/serveur/enquetes";
+import { contexte } from "@/lib/serveur/session";
 import { BarreHaut } from "../../_ui/BarreHaut";
 import { ListeEnquetes } from "../../_ui/ListeEnquetes";
 import { erreurLisible } from "../../_ui/erreurs";
@@ -10,7 +11,7 @@ import { CARTE } from "../../_ui/styles";
 import { Direct } from "./Direct";
 import { Imprimer } from "./Imprimer";
 import { Activite, Concurrents, ONGLETS, Preuves, Sources, Synthese, type Onglet } from "./Onglets";
-import { Reprendre } from "./Reprendre";
+import { Reprendre, Suivre } from "./Reprendre";
 import { VueDirect } from "./VueDirect";
 
 type Props = PageProps<"/enquete/[jeton]">;
@@ -41,8 +42,9 @@ async function Contenu({ params, searchParams }: Pick<Props, "params" | "searchP
   await connection();
   const { jeton } = await params;
   const { onglet: brut } = await searchParams;
-  const trouvee = await enqueteParJeton(jeton);
+  const [trouvee, c] = await Promise.all([enqueteParJeton(jeton), contexte()]);
   if (!trouvee) notFound();
+  const connecte = c !== null;
   const { enquete, etapes, sources } = trouvee;
   const active = enquete.statut === "en_attente" || enquete.statut === "en_cours";
   const interrompue = active && enquete.erreur !== null;
@@ -58,7 +60,15 @@ async function Contenu({ params, searchParams }: Pick<Props, "params" | "searchP
   return (
     <>
       {active && !interrompue && <Direct jeton={enquete.jeton} />}
-      <BarreHaut chemin={[{ libelle: "Enquêtes", href: "/enquetes" }, { libelle: court(enquete.sujet) }]} actions={rapport ? <Imprimer /> : undefined} />
+      <BarreHaut chemin={[{ libelle: "Enquêtes", href: "/enquetes" }, { libelle: court(enquete.sujet) }]} actions={
+          rapport ? (
+            <>
+              {connecte && <Suivre jeton={enquete.jeton} />}
+              <Imprimer />
+            </>
+          ) : undefined
+        }
+      />
 
       <div className="flex flex-1 flex-col gap-4 px-4 py-5 md:px-7">
         <div className={`${CARTE} px-5 pt-[18px] ${rapport ? "" : "pb-[18px]"}`}>
@@ -90,7 +100,7 @@ async function Contenu({ params, searchParams }: Pick<Props, "params" | "searchP
         {interrompue && (
           <div role="status" className="rounded-carte bg-ambre-pale p-4 text-sm text-ambre-texte">
             <p>L&apos;enquête s&apos;est arrêtée : {erreurLisible(enquete.erreur)}. Elle reprendra toute seule dans les prochaines heures, ou tout de suite ici.</p>
-            <Reprendre jeton={enquete.jeton} codeDemande={Boolean(process.env.RADAR_CODE_ACCES)} />
+            {connecte && <Reprendre jeton={enquete.jeton} />}
           </div>
         )}
         {enquete.statut === "echec" && (

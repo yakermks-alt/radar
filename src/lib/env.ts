@@ -22,3 +22,21 @@ export function envPublique() {
 export function envServeur() {
   return serveur.parse(process.env);
 }
+
+// Paiement (phase 6) : Stripe en mode test uniquement. Une clé « live » est refusée d'office.
+const stripe = z.object({
+  STRIPE_SECRET_KEY: z.string().startsWith("sk_test_", "Radar n'accepte que les clés Stripe de test"),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+  STRIPE_PRIX_PRO: z.string().startsWith("price_"),
+});
+
+export function envStripe() {
+  const r = stripe.safeParse(process.env);
+  return r.success ? r.data : null; // pas encore configuré : les boutons de paiement sont masqués
+}
+
+// Adresse publique du site (retours de connexion et de paiement). Netlify fournit URL en production.
+export function adresseSite(): string {
+  const brute = process.env.SITE_URL ?? process.env.URL ?? "http://localhost:3000";
+  return z.url().parse(brute).replace(/\/$/, "");
+}

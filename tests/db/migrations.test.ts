@@ -8,13 +8,14 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const DIR = join(__dirname, "../../supabase/migrations");
 const MIGRATIONS = readdirSync(DIR).filter((f) => f.endsWith(".sql")).sort();
-const TABLES = ["apps", "avis", "groupes", "groupes_avis", "journal", "enquetes", "etapes", "sources", "cache_web"];
+const TABLES = ["apps", "avis", "groupes", "groupes_avis", "journal", "enquetes", "etapes", "sources", "cache_web", "equipes", "profils", "membres", "invitations", "suivi", "stripe_evenements", "emails_matin"];
 
 // Supabase donne par défaut tous les droits aux rôles publics sur les nouvelles tables :
 // c'est précisément ce que les migrations doivent neutraliser.
 const BOOT = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
 create schema extensions;
+create schema auth; create table auth.users (id uuid primary key);
 grant usage on schema extensions to anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
@@ -303,5 +304,110 @@ describe("fiabilité (0006)", () => {
   it("refuse une clé de cache vide ou démesurée", async () => {
     await expect(db.exec(`insert into public.cache_web (cle, contenu) values ('x', '{}')`)).rejects.toThrow(/check constraint/);
     await expect(db.exec(`insert into public.cache_web (cle, contenu) values ('page:${"a".repeat(1200)}', '{}')`)).rejects.toThrow(/check constraint/);
+  });
+});
+
+describe("comptes et équipes (0007)", () => {
+  const A = "00000000-0000-4000-8000-00000000000a";
+  const B = "00000000-0000-4000-8000-00000000000b";
+  const C = "00000000-0000-4000-8000-00000000000c";
+  const connexion = async (id: string, email: string, nom: string | null = null) => {
+    const { rows } = await en("service_role", `select public.premiere_connexion('${id}', '${email}', ${nom ? `'${nom}'` : "null"}) as equipe`);
+    return (rows[0] as { equipe: number }).equipe;
+  };
+  let equipeA: number;
+
+  beforeAll(async () => {
+    await db.exec(`insert into auth.users (id) values ('${A}'), ('${B}'), ('${C}')`);
+  });
+
+  it("crée le profil et une équipe personnelle à la première connexion, une seule fois", async () => {
+    equipeA = await connexion(A, "a@exemple.fr", "Alice");
+    expect(await connexion(A, "a@exemple.fr", "Alice")).toBe(equipeA);
+    const { rows } = await db.query<{ nom: string; role: string }>(
+      `select e.nom, m.role from public.equipes e join public.membres m on m.equipe_id = e.id where m.utilisateur_id = '${A}'`,
+    );
+    expect(rows).toEqual([{ nom: "Équipe de Alice", role: "proprietaire" }]);
+    await connexion(B, "bob@exemple.fr");
+    const { rows: b } = await db.query<{ nom: string }>(`select e.nom from public.equipes e join public.profils p on p.equipe_active = e.id where p.id = '${B}'`);
+    expect(b).toEqual([{ nom: "Équipe de bob" }]); // sans nom : début de l'email
+  });
+
+  it("fait rejoindre une équipe par invitation, sans consommer d'usage pour un membre déjà là", async () => {
+    const { rows } = await db.query<{ jeton: string }>(`insert into public.invitations (equipe_id, usages_max) values (${equipeA}, 2) returning jeton`);
+    const jeton = rows[0].jeton;
+    const r = await en("service_role", `select public.rejoindre_equipe('${jeton}', '${B}', 3, 10) as equipe`);
+    expect(r.rows[0]).toEqual({ equipe: equipeA });
+    await en("service_role", `select public.rejoindre_equipe('${jeton}', '${B}', 3, 10)`);
+    const { rows: u } = await db.query<{ usages: number }>(`select usages from public.invitations where jeton = '${jeton}'`);
+    expect(u).toEqual([{ usages: 1 }]);
+    const { rows: p } = await db.query<{ equipe_active: number }>(`select equipe_active from public.profils where id = '${B}'`);
+    expect(p).toEqual([{ equipe_active: equipeA }]); // l'équipe rejointe devient l'équipe active
+  });
+
+  it("refuse une invitation expirée, épuisée ou inconnue, et une équipe pleine", async () => {
+    await connexion(C, "c@exemple.fr");
+    const { rows } = await db.query<{ jeton: string }>(`
+      insert into public.invitations (equipe_id, expire_le) values (${equipeA}, now() - interval '1 minute') returning jeton`);
+    await expect(en("service_role", `select public.rejoindre_equipe('${rows[0].jeton}', '${C}', 3, 10)`)).rejects.toThrow(/invitation_invalide/);
+    await expect(en("service_role", `select public.rejoindre_equipe(gen_random_uuid(), '${C}', 3, 10)`)).rejects.toThrow(/invitation_invalide/);
+    const { rows: r2 } = await db.query<{ jeton: string }>(`insert into public.invitations (equipe_id) values (${equipeA}) returning jeton`);
+    await expect(en("service_role", `select public.rejoindre_equipe('${r2[0].jeton}', '${C}', 2, 10)`)).rejects.toThrow(/equipe_pleine/);
+    const { rows: r3 } = await db.query<{ jeton: string }>(`insert into public.invitations (equipe_id, usages, usages_max) values (${equipeA}, 1, 1) returning jeton`);
+    await expect(en("service_role", `select public.rejoindre_equipe('${r3[0].jeton}', '${C}', 3, 10)`)).rejects.toThrow(/invitation_invalide/);
+  });
+
+  it("réserve les enquêtes dans le quota de l'équipe et la limite du site", async () => {
+    const reserver = (semaine: number, jour: number, site: number) =>
+      en("service_role", `select * from public.reserver_enquete(${equipeA}, '${A}', 'logiciel pour fleuristes', 15::smallint, ${semaine}, ${jour}, ${site})`);
+    const r = await reserver(1, 5, 1000);
+    expect(r.rows).toHaveLength(1);
+    await expect(reserver(1, 5, 1000)).rejects.toThrow(/quota_semaine/);
+    await expect(reserver(50, 1, 1000)).rejects.toThrow(/quota_jour/);
+    await expect(reserver(50, 50, 1)).rejects.toThrow(/limite_site/);
+    const { rows } = await db.query<{ equipe_id: number; lance_par: string }>(`select equipe_id, lance_par from public.enquetes where sujet = 'logiciel pour fleuristes'`);
+    expect(rows).toEqual([{ equipe_id: equipeA, lance_par: A }]);
+  });
+
+  it("passe la main au plus ancien membre quand le propriétaire part, et supprime une équipe vide", async () => {
+    await en("service_role", `select public.quitter_equipe(${equipeA}, '${A}')`);
+    const { rows } = await db.query<{ utilisateur_id: string; role: string }>(`select utilisateur_id, role from public.membres where equipe_id = ${equipeA}`);
+    expect(rows).toEqual([{ utilisateur_id: B, role: "proprietaire" }]);
+    const { rows: p } = await db.query<{ equipe_active: number | null }>(`select equipe_active from public.profils where id = '${A}'`);
+    expect(p).toEqual([{ equipe_active: null }]);
+    await en("service_role", `select public.quitter_equipe(${equipeA}, '${B}')`);
+    const { rows: e } = await db.query(`select id from public.equipes where id = ${equipeA}`);
+    expect(e).toEqual([]);
+    const { rows: q } = await db.query<{ equipe_id: number | null }>(`select equipe_id from public.enquetes where sujet = 'logiciel pour fleuristes'`);
+    expect(q).toEqual([{ equipe_id: null }]); // l'enquête reste, détachée
+  });
+
+  it("refuse de supprimer une équipe vide qui a encore un abonnement", async () => {
+    const equipeC = await connexion(C, "c@exemple.fr");
+    await db.exec(`update public.equipes set plan = 'pro' where id = ${equipeC}`);
+    await expect(en("service_role", `select public.quitter_equipe(${equipeC}, '${C}')`)).rejects.toThrow(/abonnement_actif/);
+  });
+
+  it("supprime profil, adhésions et envois quand le compte est supprimé", async () => {
+    await db.exec(`insert into public.emails_matin (utilisateur_id, jour, statut) values ('${B}', current_date, 'envoye')`);
+    await db.exec(`delete from auth.users where id = '${B}'`);
+    const { rows } = await db.query(`select 1 from public.profils where id = '${B}' union all select 1 from public.emails_matin where utilisateur_id = '${B}'`);
+    expect(rows).toEqual([]);
+  });
+
+  it("ferme toutes les fonctions de comptes aux clés publiques", async () => {
+    for (const role of ["anon", "authenticated"] as const) {
+      await expect(en(role, `select public.premiere_connexion('${A}', 'x@y.fr', null)`)).rejects.toThrow(/permission denied/);
+      await expect(en(role, `select public.rejoindre_equipe(gen_random_uuid(), '${A}', 3, 10)`)).rejects.toThrow(/permission denied/);
+      await expect(en(role, `select * from public.reserver_enquete(1, '${A}', 'x', 1::smallint, 1, 1, 1)`)).rejects.toThrow(/permission denied/);
+      await expect(en(role, `select public.quitter_equipe(1, '${A}')`)).rejects.toThrow(/permission denied/);
+    }
+  });
+
+  it("refuse les valeurs hors format (statut du suivi, identifiants Stripe)", async () => {
+    const equipeC = (await db.query<{ id: number }>(`select equipe_active as id from public.profils where id = '${C}'`)).rows[0].id;
+    await expect(db.exec(`insert into public.suivi (equipe_id, titre, statut) values (${equipeC}, 't', 'inconnu')`)).rejects.toThrow(/check constraint/);
+    await expect(db.exec(`update public.equipes set stripe_client = 'pas_un_client' where id = ${equipeC}`)).rejects.toThrow(/check constraint/);
+    await expect(db.exec(`insert into public.stripe_evenements (id, type) values ('x', 'y')`)).rejects.toThrow(/check constraint/);
   });
 });

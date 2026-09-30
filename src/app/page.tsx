@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { baseServeur, topOpportunites, type Opportunite } from "@/lib/serveur/base";
+import { OFFRES } from "@/lib/offres";
+import { baseServeur, opportunitesVisibles, type Opportunite } from "@/lib/serveur/base";
+import { exigerContexte } from "@/lib/serveur/session";
+import { titresSuivis } from "@/lib/serveur/suivi";
+import { suivreOpportunite } from "./actions";
 import { BarreHaut } from "./_ui/BarreHaut";
-import { CARTE, CHAMP } from "./_ui/styles";
+import { BOUTON_PRINCIPAL, CARTE, CHAMP } from "./_ui/styles";
 import { libelleSecteur, versSujet } from "./_ui/sujet";
 
 const CRITERES: Record<string, string> = {
@@ -38,15 +42,19 @@ export default async function Accueil({ searchParams }: PageProps<"/">) {
   );
 }
 
+// Offre gratuite : seul le lot du jour (3 opportunités) quitte le serveur ; les autres ne sont que comptées.
 async function donnees() {
   await connection();
+  const c = await exigerContexte("/");
   const db = baseServeur();
-  const [opportunites, apps, groupes] = await Promise.all([
-    topOpportunites(20),
+  const [{ visibles: opportunites, total }, apps, groupes, suivis] = await Promise.all([
+    opportunitesVisibles(c.equipe.plan),
     db.from("apps").select("id", { count: "exact", head: true }).eq("active", true),
     db.from("groupes").select("id", { count: "exact", head: true }),
+    titresSuivis(c.equipe.id),
   ]);
-  return { opportunites, nbApps: apps.count ?? 0, nbGroupes: groupes.count ?? 0 };
+  const verrouillees = total - opportunites.length;
+  return { opportunites, nbApps: apps.count ?? 0, nbGroupes: groupes.count ?? 0, suivis, verrouillees, plan: c.equipe.plan };
 }
 
 const plat = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
@@ -90,12 +98,12 @@ async function ColonneFiltres({ filtres }: { filtres: Filtres }) {
 }
 
 async function Tableau({ filtres }: { filtres: Filtres }) {
-  const { opportunites, nbApps, nbGroupes } = await donnees();
+  const { opportunites, nbApps, nbGroupes, suivis, verrouillees, plan } = await donnees();
   const lignes = filtrer(opportunites, filtres);
   return (
     <>
       <div className={`${CARTE} px-5 py-[18px]`}>
-        <h1 className="text-2xl font-bold tracking-[-0.02em]">Top 20 des opportunités</h1>
+        <h1 className="text-2xl font-bold tracking-[-0.02em]">{plan === "pro" ? "Top 20 des opportunités" : "Les 3 opportunités du jour"}</h1>
         <p className="mt-1.5 text-[13px] text-doux">
           Mis à jour chaque nuit · {nbApps} applis suivies · {nbGroupes} besoins regroupés à partir des plaintes de leurs utilisateurs
         </p>
@@ -125,16 +133,31 @@ async function Tableau({ filtres }: { filtres: Filtres }) {
               </tr>
             </thead>
             {lignes.map((o) => (
-              <Ligne key={o.id} o={o} rang={opportunites.indexOf(o) + 1} />
+              <Ligne key={o.id} o={o} rang={o.rang} suivie={suivis.has(o.nom)} />
             ))}
           </table>
         </section>
+      )}
+      {verrouillees > 0 && (
+        <div className={`${CARTE} flex flex-wrap items-center justify-between gap-3 px-5 py-4`}>
+          <div>
+            <div className="font-semibold">
+              {verrouillees} autres opportunités dans le Top 20
+            </div>
+            <div className="mt-0.5 text-[13px] text-doux">
+              Avec Radar Pro ({OFFRES.pro.prixMois} € HT par mois, en mode test) : tout le classement, {OFFRES.pro.enquetesJour} enquêtes par jour et des alertes par secteur.
+            </div>
+          </div>
+          <Link href="/equipe#offre" className={`${BOUTON_PRINCIPAL} no-underline`}>
+            Voir l&apos;offre Pro
+          </Link>
+        </div>
       )}
     </>
   );
 }
 
-function Ligne({ o, rang }: { o: Opportunite; rang: number }) {
+function Ligne({ o, rang, suivie }: { o: Opportunite; rang: number; suivie: boolean }) {
   return (
     <tbody className="border-t border-trait">
       <tr className="align-top transition-colors duration-150 ease-radar hover:bg-surface-2">
@@ -191,12 +214,25 @@ function Ligne({ o, rang }: { o: Opportunite; rang: number }) {
         <td className="px-3 py-3 text-right">{o.marche ? o.marche.total.toLocaleString("fr-FR") : "–"}</td>
         <td className="px-3 py-3 text-right">{o.nbAvis}</td>
         <td className="px-4 py-3 text-right">
+          <div className="flex justify-end gap-2">
+          {suivie ? (
+            <Link href="/suivi" className="inline-block rounded-bouton bg-vert-clair px-3 py-1.5 text-[13px] font-semibold text-vert-texte no-underline">
+              Suivie
+            </Link>
+          ) : (
+            <form action={suivreOpportunite.bind(null, o.id)}>
+              <button type="submit" className="rounded-bouton border border-bordure bg-surface px-3 py-1.5 text-[13px] font-semibold text-texte transition-colors duration-150 ease-radar hover:bg-surface-2">
+                Suivre
+              </button>
+            </form>
+          )}
           <Link
             href={`/enquetes?${new URLSearchParams({ sujet: versSujet(o.nom) })}`}
             className="inline-block rounded-bouton border border-bordure bg-surface px-3 py-1.5 text-[13px] font-semibold text-texte no-underline transition-colors duration-150 ease-radar hover:border-vert hover:bg-vert-clair hover:text-vert-fonce"
           >
             Enquêter
           </Link>
+          </div>
         </td>
       </tr>
     </tbody>

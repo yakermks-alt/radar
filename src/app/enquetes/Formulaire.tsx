@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { BOUTON_PRINCIPAL, CARTE, CHAMP } from "../_ui/styles";
 import { lancerEnquete, type EtatFormulaire } from "./actions";
 
-export function Formulaire({ sujetInitial, codeDemande, idees, restantes }: { sujetInitial: string; codeDemande: boolean; idees: string[]; restantes: number }) {
+export function Formulaire({ sujetInitial, idees, restantes, periode }: { sujetInitial: string; idees: string[]; restantes: number; periode: "semaine" | "jour" }) {
   const [etat, action, enCours] = useActionState<EtatFormulaire, FormData>(lancerEnquete, { message: null, sujet: sujetInitial });
   const [sujet, setSujet] = useState(sujetInitial);
 
@@ -27,7 +27,7 @@ export function Formulaire({ sujetInitial, codeDemande, idees, restantes }: { su
 
       {idees.length > 0 && (
         <div className="flex flex-col gap-2">
-          <span className="text-[13px] text-doux">Idées tirées du Top 20</span>
+          <span className="text-[13px] text-doux">Idées tirées du classement</span>
           <div className="flex flex-wrap gap-2">
             {idees.map((idee) => (
               <button
@@ -43,16 +43,9 @@ export function Formulaire({ sujetInitial, codeDemande, idees, restantes }: { su
         </div>
       )}
 
-      {codeDemande && (
-        <label className="flex max-w-72 flex-col gap-2 font-semibold">
-          Code d&apos;accès
-          <input name="code" type="password" required autoComplete="off" className={`${CHAMP} font-normal`} />
-        </label>
-      )}
-
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-trait pt-[18px]">
         <span className="text-[13px] text-doux">
-          Environ 1 minute · {restantes} enquête{restantes > 1 ? "s" : ""} restante{restantes > 1 ? "s" : ""} aujourd&apos;hui
+          Environ 1 minute · {restantes} enquête{restantes > 1 ? "s" : ""} restante{restantes > 1 ? "s" : ""} {periode === "semaine" ? "cette semaine" : "aujourd'hui"}
         </span>
         <button type="submit" disabled={enCours || restantes <= 0} className={`${BOUTON_PRINCIPAL} px-5 py-3 text-[15px]`}>
           {enCours ? "Lancement…" : "Lancer l'enquête"}

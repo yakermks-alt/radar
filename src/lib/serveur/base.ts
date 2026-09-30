@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { envServeur } from "../env";
+import { OFFRES, selectionDuJour, type Plan } from "../offres";
 
 // Client serveur (clé secrète) : jamais importé côté navigateur, grâce à "server-only".
 export function baseServeur() {
@@ -13,6 +14,7 @@ export type Marche = { codes: { code: string; entreprises: number }[]; total: nu
 export type Faiblesses = { bug: number; support: number; prix: number; exemples: { categorie: string; probleme: string }[] };
 export type Opportunite = {
   id: number;
+  rang: number; // place dans le classement complet
   nom: string;
   resume: string | null;
   secteur: string | null;
@@ -46,8 +48,9 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
     .limit(3, { referencedTable: "groupes_avis" })
     .limit(limite);
   if (error) throw new Error(error.message);
-  return (data as unknown as Ligne[]).map((g) => ({
+  return (data as unknown as Ligne[]).map((g, i) => ({
     id: g.id,
+    rang: i + 1,
     nom: g.nom,
     resume: g.resume,
     secteur: g.secteur,
@@ -59,4 +62,10 @@ export async function topOpportunites(limite = 20): Promise<Opportunite[]> {
     marche: g.contexte?.marche ?? null,
     citations: g.groupes_avis.map((ga) => ({ note: ga.avis.note, titre: ga.avis.titre, contenu: ga.avis.contenu, app: ga.avis.apps.nom })),
   }));
+}
+
+// Ce que l'offre d'une équipe laisse voir du classement : tout le Top 20 en Pro, le lot du jour en gratuit.
+export async function opportunitesVisibles(plan: Plan, date = new Date()): Promise<{ visibles: Opportunite[]; total: number }> {
+  const classement = await topOpportunites(OFFRES.pro.opportunites);
+  return { visibles: plan === "pro" ? classement : selectionDuJour(classement, date), total: classement.length };
 }

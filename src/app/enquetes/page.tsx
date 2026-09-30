@@ -2,7 +2,8 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { topOpportunites } from "@/lib/serveur/base";
-import { agentLancable, dernieresEnquetes, enquetesDuJour, ENQUETES_PAR_JOUR } from "@/lib/serveur/enquetes";
+import { agentLancable, dernieresEnquetes, quotaEquipe } from "@/lib/serveur/enquetes";
+import { exigerContexte } from "@/lib/serveur/session";
 import { BarreHaut } from "../_ui/BarreHaut";
 import { ListeEnquetes } from "../_ui/ListeEnquetes";
 import { CARTE, dateCourte, tonEnquete } from "../_ui/styles";
@@ -74,16 +75,17 @@ export default async function Enquetes({ searchParams }: PageProps<"/enquetes">)
 
 async function FormulaireDynamique({ sujet }: { sujet: string }) {
   await connection();
-  const [top, faites] = await Promise.all([topOpportunites(4).catch(() => []), enquetesDuJour()]);
+  const c = await exigerContexte("/enquetes");
+  const [top, quota] = await Promise.all([topOpportunites(c.equipe.plan === "pro" ? 4 : 3).catch(() => []), quotaEquipe(c.equipe.id, c.equipe.plan)]);
   if (!agentLancable() && process.env.NODE_ENV === "production") {
     return <p className={`${CARTE} p-6 text-doux`}>Le lancement d&apos;enquêtes n&apos;est pas encore branché sur ce site.</p>;
   }
   return (
     <Formulaire
       sujetInitial={sujet}
-      codeDemande={Boolean(process.env.RADAR_CODE_ACCES)}
       idees={top.map((o) => versSujet(o.nom))}
-      restantes={Math.max(0, ENQUETES_PAR_JOUR - faites)}
+      restantes={quota.restantes}
+      periode={quota.periode}
     />
   );
 }
@@ -91,7 +93,8 @@ async function FormulaireDynamique({ sujet }: { sujet: string }) {
 // Sur téléphone et petit écran, la colonne des enquêtes est masquée : on les liste ici.
 async function ListeMobile() {
   await connection();
-  const enquetes = await dernieresEnquetes(10);
+  const c = await exigerContexte("/enquetes");
+  const enquetes = await dernieresEnquetes(c.equipe.id, 10);
   if (!enquetes.length) return null;
   return (
     <section className={`${CARTE} p-4 lg:hidden`}>

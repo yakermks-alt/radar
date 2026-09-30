@@ -121,11 +121,17 @@
 
 **But :** le socle SaaS complet.
 
-- [ ] (Claude) Comptes et connexion, espaces d'équipe, invitations
-- [ ] (Claude) Tableau « à valider » : à creuser, entretien fait, abandonnée, on se lance
-- [ ] (Claude) E-mail du matin : 3 opportunités du jour
-- [ ] (Claude) Stripe en mode test. Gratuit : 3 opportunités par jour, 1 enquête par semaine. Payant : illimité + alertes par secteur. Webhooks et limites appliquées côté serveur
-- [ ] (Claude) Page admin : utilisateurs, enquêtes, erreurs, quotas
+**Décisions du 30/09 :** connexion par Google et GitHub (aucun mot de passe, aucun email à envoyer pour se connecter) ; pas de domaine pour les emails (mode démo de Resend : seule l'adresse du compte Resend reçoit l'email du matin, les invitations passent par un lien à copier) ; Pro à 19 € HT par mois en mode test ; en gratuit, les « 3 opportunités par jour » tournent dans le Top 20 (un nouveau lot chaque jour, le même sur le site et dans l'email).
+
+- [x] (Claude) Comptes et connexion (Google, GitHub, proxy qui protège les pages, rapports toujours lisibles par leur lien secret), équipes (équipe personnelle à la première connexion, plusieurs équipes par personne, passage de main quand le propriétaire part), invitations par lien (7 jours, 5 usages, 3 liens au plus), suppression du compte (30/09). Migration `0007_comptes.sql` : fonctions atomiques pour la première connexion, les invitations, le quota d'enquêtes (équipe verrouillée pendant le calcul) et le départ d'une équipe ; 9 tests de base
+- [x] (Claude) Tableau « à valider » : à creuser, entretien fait, abandonnée, on se lance ; ajout depuis le classement ou un rapport, notes (30/09)
+- [x] (Claude) Email du matin : 3 opportunités (gratuit : le lot du jour ; Pro : secteurs suivis d'abord, rien de déjà reçu depuis 14 jours), HTML échappé, tâche GitHub `matin.yml` à 7 h (30/09)
+- [x] (Claude) Stripe en mode test : page de paiement, portail client, webhook signé et traité une seule fois, abonnement relu chez Stripe à chaque événement, clés « live » refusées ; script `scripts/stripe/preparer.mts` (produit, prix, webhook, portail) (30/09)
+- [x] (Claude) Page admin : utilisateurs, équipes, enquêtes, erreurs, tâches de nuit, quotas (30/09)
+- [ ] (Toi) Coller `supabase/migrations/0007_comptes.sql` dans Supabase
+- [ ] (Toi) Applications OAuth Google et GitHub, branchées dans Supabase (Authentication > Providers)
+- [ ] (Toi) Compte Stripe (mode test) et clé `sk_test_` dans `.env.local` ; compte Resend et clé dans les secrets GitHub
+- [ ] (Claude) Mise en ligne, puis test de bout en bout : connexion, invitation, enquête, suivi, paiement test, email
 
 **Fin de phase :** un vrai SaaS utilisable par quelqu'un d'autre.
 
