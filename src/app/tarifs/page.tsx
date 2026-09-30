@@ -61,7 +61,7 @@ export default async function Tarifs() {
                   <h2 className="text-[17px] font-bold">{o.nom}</h2>
                   {pro && <span className="rounded-full bg-vert-clair px-2.5 py-0.5 text-xs font-semibold text-vert-texte">Le plus complet</span>}
                 </div>
-                <div className="chiffres text-[34px] font-extrabold tracking-[-0.02em]">
+                <div className="text-[34px] font-extrabold tracking-[-0.02em]">
                   {o.prixMois} €{pro && <span className="ml-1.5 text-sm font-medium text-doux">HT par mois</span>}
                 </div>
                 <ul className="flex flex-col gap-2 text-texte-2">

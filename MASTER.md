@@ -62,7 +62,7 @@ Police unique : **Onest** (Google Fonts, 400, 500, 600, 700), via `next/font`.
 | `--t-petit` | 13 px / 1,45 | 400 | libellés, fil d'Ariane |
 | `--t-mini` | 12 px / 1,4 | 400 à 600 | légendes, pastilles |
 
-Chiffres : `font-variant-numeric: tabular-nums` dans les tableaux et les chiffres clés.
+Chiffres : `font-variant-numeric: tabular-nums` dans les tableaux seulement (colonnes alignées). Jamais sur un grand chiffre isolé (prix, chiffre clé) : le « 1 » y paraît décollé (« 1 9 € », 30/09).
 
 ## Espacements, rayons, ombres
 

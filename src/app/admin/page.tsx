@@ -30,7 +30,7 @@ function Chiffre({ libelle, valeur, detail }: { libelle: string; valeur: string 
   return (
     <div className={`${CARTE} p-4`}>
       <div className="text-[13px] text-doux">{libelle}</div>
-      <div className="chiffres mt-1 text-2xl font-bold">{valeur}</div>
+      <div className="mt-1 text-2xl font-bold">{valeur}</div>
       {detail && <div className="mt-0.5 text-xs text-doux">{detail}</div>}
     </div>
   );

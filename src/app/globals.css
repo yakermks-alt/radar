@@ -86,6 +86,9 @@ body {
   border-radius: var(--radius-bouton);
 }
 
+/* Chiffres de même largeur : seulement dans les tableaux, pour aligner les colonnes. Un grand chiffre
+   isolé (prix, chiffre clé) garde les chiffres proportionnels : en chasse fixe, le « 1 » d'Onest est
+   entouré de vide (« 1 9 € », remarque de Maksen du 30/09). */
 .chiffres {
   font-variant-numeric: tabular-nums;
 }

@@ -52,7 +52,7 @@ export function VueDirect({ etapes, sources, budget, active }: { etapes: EtapeAf
       <aside className="flex flex-col gap-3.5 xl:col-span-5">
         <section className={`${CARTE} p-[18px]`}>
           <h2 className="mb-3 text-base font-bold">Déjà trouvé</h2>
-          <dl className="chiffres grid grid-cols-2 gap-3">
+          <dl className="grid grid-cols-2 gap-3">
             {[
               ["Entreprises du métier", t.entreprises ? t.entreprises.toLocaleString("fr-FR") : "–"],
               ["Avis de clients", t.avis],

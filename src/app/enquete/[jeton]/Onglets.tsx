@@ -118,7 +118,7 @@ export function Synthese({ rapport, statut }: { rapport: Rapport; statut: string
   const toutes = rapport.sections.flatMap((s) => s.affirmations);
   return (
     <div className="flex flex-col gap-3.5">
-      <div className="chiffres grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
         <div className={`rounded-carte px-[18px] py-4 ${ton.carte} ${ton.carteTexte}`}>
           <div className={`text-[13px] ${ton.carteDoux}`}>Verdict de l&apos;agent</div>
           <div className="mt-1.5 text-2xl font-bold">{ton.libelle}</div>

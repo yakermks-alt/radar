@@ -86,7 +86,7 @@ export async function Vitrine() {
       />
       <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-4 pt-8 pb-12 md:px-7 md:pt-12">
         <div className="flex max-w-[760px] flex-col gap-3.5">
-          <p className="chiffres text-[13px] text-doux">
+          <p className="text-[13px] text-doux">
             {maj ? `Mis à jour le ${maj}` : "Mis à jour chaque nuit"} · {nb(apps.count)} applis suivies · {nb(avis.count)} avis
           </p>
           <h1 className="text-[clamp(28px,4.2vw,42px)] leading-[1.08] font-extrabold tracking-[-0.03em] text-balance">

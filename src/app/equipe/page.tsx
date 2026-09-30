@@ -167,7 +167,7 @@ async function Contenu({ message, paiement }: { message: string | null; paiement
               <div key={p} className={`rounded-bouton border p-4 ${actuelle ? "border-vert bg-vert-clair" : "border-bordure"}`}>
                 <div className="flex items-baseline justify-between">
                   <span className="font-bold">{o.nom}</span>
-                  <span className="chiffres text-xl font-bold">
+                  <span className="text-xl font-bold">
                     {o.prixMois} €<span className="text-xs font-normal text-doux"> HT/mois</span>
                   </span>
                 </div>
