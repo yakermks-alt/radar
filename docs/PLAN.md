@@ -111,7 +111,7 @@
 - [x] (Claude) Suivi de chaque enquête (29/09) : durée, appels à l'IA par modèle, recherches web, pages, lectures en cache, étapes ratées, reprises ; affiché en bas du rapport
 - [x] (Claude) Garde-fous (29/09) : cache de 7 jours des recherches et des pages (table `cache_web`), plafond de 900 recherches web par mois, quota Gemini épuisé = attente jusqu'à sa remise à zéro, reprise automatique chaque heure des enquêtes interrompues ou oubliées (5 fois au plus, puis échec), contrôle sans IA « chiffre non prouvé »
 - [x] (Claude) **Premier banc** (`docs/banc/banc-2026-09-29-22-07.md`) : 19/20 enquêtes, **taux d'invention 33 %** (41 sur 123), 0 citation absente, 0 chiffre inventé. Fautes = généralisations d'un seul avis, qualificatifs ajoutés, promesses d'éditeur présentées comme des faits, et relecteur privé du titre de la source. Corrigé : consignes d'écriture fidèle, relecture intégrée aussi exigeante que l'évaluateur, titre et adresse de la source donnés aux relecteurs
-- [ ] (Claude) **Deuxième banc** (`banc-2026-09-29-22-30`) : 8 enquêtes faites avant l'épuisement du quota Flash-Lite, jamais relues par l'IA (taux non mesuré). À faire après 10 h : `banc.yml` avec « continuer = banc-2026-09-29-22-30 » (les 12 sujets restants + évaluation), puis réévaluation avec Flash si besoin
+- [x] (Claude) **Deuxième banc** (`banc-2026-09-29-22-30`) complété le 30/09 : 20/20 enquêtes relues (Flash-Lite, Flash saturé), **18,9 %** (24 sur 127) : 16 « nom non prouvé » (contrôle ajouté la nuit précédente ; 8 enquêtes faites avant les corrections), 8 jugées non prouvées, 0 citation absente, 0 chiffre inventé
 - [x] (Claude) Relecture à la main du 2e banc (69 affirmations, 30/09 nuit) : ~12-14 % de fautes contre 34,5 % au 1er banc (les généralisations ont presque disparu). Fautes restantes : nom d'entreprise absent de la citation (prix tirés de comparatifs), preuves hors sujet (avis d'autres métiers, codes NAF des éditeurs), citations en double. Corrigé : contrôle sans IA « nom non prouvé » (10,6 % du 1er banc, 23,2 % du 2e), consigne d'inclure le nom dans la citation avec « … », pertinence des avis et du code NAF, doublons retirés
 - [ ] (Claude) Corriger jusqu'à un taux d'invention ≤ 5 %, mesuré par un relecteur Flash
 
@@ -128,8 +128,9 @@
 - [x] (Claude) Email du matin : 3 opportunités (gratuit : le lot du jour ; Pro : secteurs suivis d'abord, rien de déjà reçu depuis 14 jours), HTML échappé, tâche GitHub `matin.yml` à 7 h (30/09)
 - [x] (Claude) Stripe en mode test : page de paiement, portail client, webhook signé et traité une seule fois, abonnement relu chez Stripe à chaque événement, clés « live » refusées ; script `scripts/stripe/preparer.mts` (produit, prix, webhook, portail) (30/09)
 - [x] (Claude) Page admin : utilisateurs, équipes, enquêtes, erreurs, tâches de nuit, quotas (30/09)
-- [ ] (Toi) Coller `supabase/migrations/0007_comptes.sql` dans Supabase
-- [ ] (Toi) Applications OAuth Google et GitHub, branchées dans Supabase (Authentication > Providers)
+- [x] (Toi) Migration 0007 collée, applications OAuth Google et GitHub branchées dans Supabase (30/09)
+- [x] (Claude) Page de confidentialité, mise en ligne (30/09) ; première connexion réussie, compte de Maksen passé admin
+- [ ] (Toi) Google : Branding (adresse du site + page de confidentialité), puis publier l'application (en attendant, seuls les utilisateurs test se connectent avec Google) (Authentication > Providers)
 - [ ] (Toi) Compte Stripe (mode test) et clé `sk_test_` dans `.env.local` ; compte Resend et clé dans les secrets GitHub
 - [ ] (Claude) Mise en ligne, puis test de bout en bout : connexion, invitation, enquête, suivi, paiement test, email
 
