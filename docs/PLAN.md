@@ -131,7 +131,7 @@
 - [x] (Toi) Migration 0007 collée, applications OAuth Google et GitHub branchées dans Supabase (30/09)
 - [x] (Claude) Page de confidentialité, mise en ligne (30/09) ; première connexion réussie, compte de Maksen passé admin
 - [x] (Toi) Connexion Google publiée, ouverte à tout le monde (30/09)
-- [ ] (Toi) Compte Stripe (mode test) et clé `sk_test_` dans `.env.local` ; compte Resend et clé dans les secrets GitHub
+- [x] (Toi + Claude) Stripe (mode test) préparé par script (produit Radar Pro 19 € HT/mois, webhook, portail), variables sur Netlify ; Resend branché, premier email du matin envoyé (30/09)
 - [x] (Claude) Mise en ligne (30/09), connexion testée
 - [ ] (Claude) Test de bout en bout : invitation, enquête, suivi, paiement test, email
 
