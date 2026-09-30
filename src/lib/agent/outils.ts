@@ -2,18 +2,32 @@
 // et fiches d'entreprises (API Recherche d'entreprises de l'État, gratuite et sans clé).
 import { z } from "zod";
 
-export type Resultat = { titre: string; url: string; extrait: string };
+export type Resultat = { titre: string; url: string; extrait: string; complet?: string };
 
 const tavily = z.object({
-  results: z.array(z.object({ title: z.string().nullish(), url: z.string(), content: z.string().nullish() })),
+  results: z.array(z.object({ title: z.string().nullish(), url: z.string(), content: z.string().nullish(), raw_content: z.string().nullish() })),
 });
+
+// Sites d'avis sur les logiciels (SaaS sur ordinateur, que l'App Store ne couvre pas). Ils bloquent les
+// robots (403) : on ne les lit jamais nous-mêmes, mais la recherche renvoie la copie de la page que le
+// moteur a déjà en mémoire, une page à la fois, pendant une enquête (30/09).
+const SITES_AVIS = /(^|\.)(trustpilot\.com|capterra\.(fr|com)|getapp\.(fr|com)|g2\.com|softwareadvice\.(fr|com)|appvizer\.(fr|com))$/;
+export const PAGE_AVIS_MAX = 20_000;
+
+export function pageAvis(url: string): boolean {
+  try {
+    return SITES_AVIS.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
 
 export async function rechercherWeb(requete: string, cle: string | undefined, f: typeof fetch = fetch): Promise<Resultat[]> {
   if (!cle) throw new Error("Recherche web indisponible (TAVILY_API_KEY manquante)");
   const res = await f("https://api.tavily.com/search", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${cle}` },
-    body: JSON.stringify({ query: requete, max_results: 6, search_depth: "basic", include_answer: false }),
+    body: JSON.stringify({ query: requete, max_results: 6, search_depth: "basic", include_answer: false, include_raw_content: true }),
     signal: AbortSignal.timeout(30_000),
   });
   if (res.status === 429 || res.status === 432) throw new Error("Quota de recherche web épuisé");
@@ -21,7 +35,12 @@ export async function rechercherWeb(requete: string, cle: string | undefined, f:
   return tavily
     .parse(await res.json())
     .results.filter((r) => /^https?:\/\//.test(r.url))
-    .map((r) => ({ titre: (r.title ?? r.url).slice(0, 300), url: r.url, extrait: (r.content ?? "").slice(0, 1500) }));
+    .map((r) => ({
+      titre: (r.title ?? r.url).slice(0, 300),
+      url: r.url,
+      extrait: (r.content ?? "").slice(0, 1500),
+      ...(pageAvis(r.url) && r.raw_content ? { complet: r.raw_content.slice(0, PAGE_AVIS_MAX) } : {}),
+    }));
 }
 
 // Effectifs : codes Insee des tranches.

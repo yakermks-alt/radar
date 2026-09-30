@@ -10,7 +10,9 @@ export type Magasin = {
   ecrire: (cle: string, contenu: unknown) => Promise<void>;
 };
 
-export const cleRecherche = (requete: string) => `recherche:${requete.toLowerCase().replace(/\s+/g, " ").trim()}`.slice(0, 1100);
+// « recherche2 » depuis le 30/09 : les résultats gardent le texte complet des pages d'avis (les anciens
+// résultats en cache ne l'avaient pas).
+export const cleRecherche = (requete: string) => `recherche2:${requete.toLowerCase().replace(/\s+/g, " ").trim()}`.slice(0, 1100);
 export const clePage = (url: string) => `page:${url}`.slice(0, 1100);
 
 export async function avecCache<T>(

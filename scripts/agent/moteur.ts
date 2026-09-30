@@ -14,7 +14,7 @@ import { genererJson, MODELES, MODELES_REDACTION, ModeleIndisponible, QuotaEpuis
 import { creerCompteur } from "../../src/lib/marche/sirene";
 import { db, sansErreur, toutLire, verifier } from "../lib/base";
 
-const resultatsWeb = z.array(z.object({ titre: z.string(), url: z.string(), extrait: z.string() }));
+const resultatsWeb = z.array(z.object({ titre: z.string(), url: z.string(), extrait: z.string(), complet: z.string().optional() }));
 const pageLue = z.object({ url: z.string(), titre: z.string().nullable(), texte: z.string(), suspecte: z.boolean() });
 
 const magasin: Magasin = {
